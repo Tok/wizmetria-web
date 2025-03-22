@@ -15,8 +15,191 @@
     
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
+        body {
+            background-color: #111827;
+            background-image: radial-gradient(circle at 50% 0%, rgba(91, 33, 182, 0.1), transparent 70%);
+        }
+        
+        /* Control buttons (language and shiny toggle) styling consistency */
+        .language-selector-button,
+        .shiny-toggle-button {
+            height: 40px;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Add border to both control buttons for consistent look */
+        .shiny-toggle-button,
+        .language-selector-button {
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+        
+        /* Make the Analyze button maintain consistent width regardless of shiny state */
+        button.bg-purple-700 {
+            min-width: 120px;
+            transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+            border: 1px solid rgba(139, 92, 246, 0.5);
+        }
+        
+        /* RTL specific adjustments to ensure buttons appear connected */
+        [dir="rtl"] .flex.items-center > div:first-child,
+        [dir="rtl"] .flex.items-center > div:last-child {
+            margin: 0 !important;
+        }
+        
+        [dir="rtl"] .flex.items-center {
+            gap: 12px;
+        }
+        
+        /* Ensure controls container is consistently spaced in both directions */
+        .controls-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .controls-container.rtl {
+            flex-direction: row-reverse;
+        }
+        
         .alphabet-circle {
             min-height: 400px;
+            position: relative;
+        }
+        
+        .shiny-enabled .alphabet-circle {
+            position: relative;
+        }
+        
+        .shiny-enabled .alphabet-circle::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.2), transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .main-orb {
+            stroke: #8b5cf6;
+            stroke-width: 2;
+        }
+        
+        .shiny-enabled .main-orb {
+            animation: pulse 3s infinite alternate;
+            stroke: #a855f7;
+            filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.6));
+        }
+        
+        @keyframes pulse {
+            0% {
+                stroke-width: 2;
+                filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.4));
+            }
+            100% {
+                stroke-width: 2.5;
+                filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.8));
+            }
+        }
+        
+        /* Tech Wizard Button Effects */
+        .shiny-enabled button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+            border: none !important;
+        }
+        
+        .shiny-enabled button:hover {
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.8), 0 0 20px rgba(139, 92, 246, 0.4);
+            transform: translateY(-1px);
+        }
+        
+        .shiny-enabled button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right, 
+                rgba(255, 255, 255, 0) 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg) translateX(-100%);
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.7s;
+        }
+        
+        .shiny-enabled button:hover::after {
+            opacity: 1;
+            transform: rotate(30deg) translateX(100%);
+        }
+        
+        /* Add magical floating animation to all buttons in shiny mode */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .shiny-enabled button {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        /* Special styles for analyze button */
+        .shiny-enabled button[class*="bg-purple-700"] {
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9) !important;
+            background-size: 200% 200% !important;
+            animation: gradientBG 3s ease infinite, float 3s ease-in-out infinite;
+            border: 1px solid rgba(167, 139, 250, 0.5) !important;
+        }
+        
+        .shiny-enabled button[class*="bg-purple-700"]:hover {
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.9), 0 0 30px rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .shiny-enabled button[class*="bg-purple-700"]::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.3), transparent 70%);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .shiny-enabled button[class*="bg-purple-700"]:hover::before {
+            opacity: 1;
+        }
+        
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Magical highlight for input field when shiny effects are on */
+        .shiny-enabled input:focus {
+            box-shadow: 0 0 0 2px #8b5cf6, 0 0 10px rgba(139, 92, 246, 0.7) !important;
+            border-color: #a855f7 !important;
+        }
+        
+        /* Add subtle magical background to the entire page when shiny is enabled */
+        .shiny-enabled body {
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(91, 33, 182, 0.15), transparent 70%),
+                radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.1), transparent 50%);
         }
     </style>
 </head>

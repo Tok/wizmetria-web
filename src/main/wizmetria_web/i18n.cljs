@@ -91,7 +91,11 @@
     :rotation-symmetry-connections "Rotation symmetry connections"
     :symmetry-results "Symmetry Results"
     :by "by"
-    :around-axis "around axis"}
+    :around-axis "around axis"
+    :effects-on "Shiny: On"
+    :effects-off "Shiny: Off"
+    :enable-effects "Enable shiny effects"
+    :disable-effects "Disable shiny effects"}
 
    :ru
    {:app-title "Визметрия"
@@ -152,7 +156,11 @@
     :rotation-symmetry-connections "Соединения вращательной симметрии"
     :symmetry-results "Результаты симметрии"
     :by "по"
-    :around-axis "вокруг оси"}
+    :around-axis "вокруг оси"
+    :effects-on "Блеск: Вкл"
+    :effects-off "Блеск: Выкл"
+    :enable-effects "Включить эффекты блеска"
+    :disable-effects "Выключить эффекты блеска"}
 
    :zh
    {:app-title "符文度量"
@@ -213,7 +221,11 @@
     :rotation-symmetry-connections "旋转对称连接"
     :symmetry-results "对称结果"
     :by "按"
-    :around-axis "围绕轴"}
+    :around-axis "围绕轴"
+    :effects-on "闪亮: 开"
+    :effects-off "闪亮: 关"
+    :enable-effects "启用闪亮效果"
+    :disable-effects "禁用闪亮效果"}
 
    :ar
    {:app-title "ويزمتريا"
@@ -274,7 +286,11 @@
     :rotation-symmetry-connections "وصلات التماثل الدوراني"
     :symmetry-results "نتائج التماثل"
     :by "حسب"
-    :around-axis "حول محور"}
+    :around-axis "حول محور"
+    :effects-on "لامع: مفعل"
+    :effects-off "لامع: معطل"
+    :enable-effects "تمكين التأثيرات اللامعة"
+    :disable-effects "تعطيل التأثيرات اللامعة"}
 
    :he
    {:app-title "ויזמטריה"
@@ -335,7 +351,11 @@
     :rotation-symmetry-connections "חיבורי סימטריה סיבובית"
     :symmetry-results "תוצאות סימטריה"
     :by "לפי"
-    :around-axis "סביב ציר"}
+    :around-axis "סביב ציר"
+    :effects-on "נוצץ: פעיל"
+    :effects-off "נוצץ: כבוי"
+    :enable-effects "הפעל אפקטים נוצצים"
+    :disable-effects "כבה אפקטים נוצצים"}
 
    :ko
    {:app-title "위즈메트리아"
@@ -396,7 +416,11 @@
     :rotation-symmetry-connections "회전 대칭 연결"
     :symmetry-results "대칭 결과"
     :by "기준"
-    :around-axis "축 주변"}
+    :around-axis "축 주변"
+    :effects-on "반짝임: 켜짐"
+    :effects-off "반짝임: 꺼짐"
+    :enable-effects "반짝이는 효과 켜기"
+    :disable-effects "반짝이는 효과 끄기"}
 
    :ta
    {:app-title "விஸ்மெட்ரியா"
@@ -457,7 +481,11 @@
     :rotation-symmetry-connections "சுழற்சி சமச்சீர் இணைப்புகள்"
     :symmetry-results "சமச்சீர் முடிவுகள்"
     :by "மூலம்"
-    :around-axis "அச்சை சுற்றி"}})
+    :around-axis "அச்சை சுற்றி"
+    :effects-on "பிளியல்: இயக்கம்"
+    :effects-off "பிளியல்: நிறுத்தம்"
+    :enable-effects "பிளியல் செயல்படுத்துதல்"
+    :disable-effects "பிளியல் நிறுத்துதல்"}})
 
 ;; Re-frame subscriptions
 (rf/reg-sub

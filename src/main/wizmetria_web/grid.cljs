@@ -46,6 +46,11 @@
 (defn- letter-positions []
   (mapv letter-position (range 26)))
 
+;; -- Helper functions for angle calculations --
+(defn- radians [deg]
+  "Convert degrees to radians"
+  (* deg (/ Math/PI 180)))
+
 ;; Draw the letter circle and lines connecting the letters in the word
 (defn circle-view [word]
   (let [positions (letter-positions)
@@ -60,10 +65,20 @@
       (str "A circular visualization showing the 26 letters of the alphabet arranged in a circle"
            (when (seq cleaned-word) (str " with the word '" cleaned-word "' highlighted")))]
      
-     ;; Draw outer circle
-     [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#6b7280" :stroke-width 1
+     ;; Draw outer circle as main orb with class for CSS animation
+     [:circle.main-orb {:cx center-x :cy center-y :r radius 
+               :fill "none" :stroke "#8b5cf6" :stroke-width 2
                :aria-hidden "true"}]
+     
+     ;; Magic decorative elements - lines radiating from center
+     (for [i (range 0 360 (/ 360 26))]
+       ^{:key (str "ray-" i)}
+       [:line {:x1 center-x 
+              :y1 center-y 
+              :x2 (+ center-x (* radius (Math/cos (radians i))))
+              :y2 (+ center-y (* radius (Math/sin (radians i))))
+              :stroke "rgba(139, 92, 246, 0.1)"
+              :stroke-width 1}])
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]
@@ -91,10 +106,10 @@
                 :when (and from-pos to-pos)]
             ^{:key (str "line-" from-letter to-letter "-" idx)}
             [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
-                    :x2 (:x to-intersection) :y2 (:y to-intersection)
-                    :stroke "#8b5cf6" :stroke-width 2.5
-                    :aria-label (str "Connection from " from-letter " to " to-letter)
-                    :aria-hidden "true"}])
+                   :x2 (:x to-intersection) :y2 (:y to-intersection)
+                   :stroke "#8b5cf6" :stroke-width 2.5
+                   :aria-label (str "Connection from " from-letter " to " to-letter)
+                   :aria-hidden "true"}])
           
           ;; Circles at letter positions
           (for [[idx letter] (map-indexed vector word-letters)
@@ -104,9 +119,9 @@
                 :when pos]
             ^{:key (str "dot-" letter "-" idx)}
             [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
-                      :fill "#a855f7"
-                      :aria-label (str "Letter " letter " position marker")
-                      :aria-hidden "true"}])]))]))
+                     :fill "#a855f7"
+                     :aria-label (str "Letter " letter " position marker")
+                     :aria-hidden "true"}])]))]))
 
 ;; Draw a symmetry axis on the circle
 (defn axis-view [axis-id]
@@ -121,9 +136,19 @@
       (str "Visualization showing symmetry axis " axis-id " across the alphabet circle")]
      
      ;; Draw outer circle
-     [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#6b7280" :stroke-width 1
+     [:circle.main-orb {:cx center-x :cy center-y :r radius 
+               :fill "none" :stroke "#8b5cf6" :stroke-width 2
                :aria-hidden "true"}]
+     
+     ;; Magic decorative elements - lines radiating from center
+     (for [i (range 0 360 (/ 360 26))]
+       ^{:key (str "ray-" i)}
+       [:line {:x1 center-x 
+              :y1 center-y 
+              :x2 (+ center-x (* radius (Math/cos (radians i))))
+              :y2 (+ center-y (* radius (Math/sin (radians i))))
+              :stroke "rgba(139, 92, 246, 0.1)"
+              :stroke-width 1}])
      
      ;; Draw symmetry axis
      [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
@@ -201,9 +226,19 @@
            (when (and has-symmetry is-rotation-axis) " Rotation pairs are connected with dashed pink lines."))]
      
      ;; Draw outer circle
-     [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#6b7280" :stroke-width 1
-               :aria-hidden "true"}]
+     [:circle.main-orb {:cx center-x :cy center-y :r radius 
+                        :fill "none" :stroke "#8b5cf6" :stroke-width 2
+                        :aria-hidden "true"}]
+     
+     ;; Magic decorative elements - lines radiating from center (26-fold pattern)
+     (for [i (range 0 360 (/ 360 26))]
+       ^{:key (str "ray-" i)}
+       [:line {:x1 center-x 
+               :y1 center-y 
+               :x2 (+ center-x (* radius (Math/cos (radians i))))
+               :y2 (+ center-y (* radius (Math/sin (radians i))))
+               :stroke "rgba(139, 92, 246, 0.1)"
+               :stroke-width 1}])
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]

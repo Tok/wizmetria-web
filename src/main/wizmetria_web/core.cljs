@@ -28,6 +28,11 @@
  (fn [db]
    (:processing-state db)))
 
+(rf/reg-sub
+ :shiny-effects-enabled
+ (fn [db]
+   (get db :shiny-effects-enabled false)))
+
 ;; -- Events --
 (rf/reg-event-db
  :initialize
@@ -36,7 +41,8 @@
    (let [initial-db {:word "WIZARD"
                      :symmetry-results (sym/evaluate [(sym/clean "WIZARD")])
                      :wordlist-stats nil
-                     :processing-state nil}]
+                     :processing-state nil
+                     :shiny-effects-enabled false}]
      
      ;; Initialize language separately
      (js/setTimeout 
@@ -207,6 +213,11 @@
           :wordlist-stats stats
           :processing-state {:status :complete})))
 
+(rf/reg-event-db
+ :toggle-shiny-effects
+ (fn [db _]
+   (update db :shiny-effects-enabled not)))
+
 ;; -- Views --
 (defn input-field []
   (let [word @(rf/subscribe [:word])]
@@ -325,6 +336,30 @@
        {:on-click #(rf/dispatch [:update-word "NEARLY"])} "NEARLY"] ", "
       [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
        {:on-click #(rf/dispatch [:update-word "REFERS"])} "REFERS"]]]]])
+
+(defn toggle-switch []
+  (let [enabled? @(rf/subscribe [:shiny-effects-enabled])]
+    [:div.relative.inline-block
+     [:button.shiny-toggle-button.flex.items-center.text-sm.bg-indigo-900.hover:bg-indigo-800.transition-colors.px-3.py-2.rounded-md.text-purple-200
+      {:on-click #(do 
+                   (rf/dispatch [:toggle-shiny-effects])
+                   ;; Force re-render to make sure CSS changes are applied
+                   (js/setTimeout 
+                    (fn [] 
+                      (let [body (.-body js/document)
+                            currently-enabled? (not enabled?)] ;; Toggle happens after click
+                        (when body
+                          ;; First remove existing class to ensure clean state
+                          (.remove (.-classList body) "shiny-enabled")
+                          ;; Then add if it should be enabled
+                          (when currently-enabled?
+                            (.add (.-classList body) "shiny-enabled"))))) 
+                    10))}
+      [:span.mr-2 (t (if enabled? :effects-on :effects-off))]
+      [:div.relative.inline-flex.items-center.h-5.w-9.rounded-full.transition-colors.duration-200.ease-in-out
+       {:class (if enabled? "bg-purple-600" "bg-gray-600")}
+       [:span.absolute.inline-block.h-3.w-3.rounded-full.bg-white.transform.transition-transform.duration-300.shadow-md
+        {:class (if enabled? "translate-x-5" "translate-x-1")}]]]]))
 
 ;; -- File analysis component --
 (defn text-analysis []
@@ -476,15 +511,31 @@
    [:p (t :footer-text)]])
 
 (defn main-panel []
-  (let [text-direction @(rf/subscribe [:text-direction])]
+  (let [text-direction @(rf/subscribe [:text-direction])
+        shiny-enabled? @(rf/subscribe [:shiny-effects-enabled])
+        rtl? (= text-direction "rtl")]
     [:div.min-h-screen.bg-gray-900.text-purple-100.flex.flex-col
-     {:dir text-direction}
+     {:dir text-direction
+      :class (when shiny-enabled? "shiny-enabled")}
      [:div.flex-grow.px-4.py-8.flex.flex-col.items-center
       [:div.flex.items-center.justify-between.w-full.max-w-5xl
        [:div
-        [:h1.text-5xl.text-center.mb-4.text-purple-300.font-bold.tracking-wider (t :app-title)]
-        [:h2.text-2xl.text-center.mb-8.text-indigo-300.font-light (t :app-subtitle)]]
-       [i18n/language-selector]]
+        [:h1.text-5xl.text-center.mb-4.text-purple-300.font-bold.tracking-wider 
+         {:style (when shiny-enabled? 
+                   {:text-shadow "0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3)"})} 
+         (t :app-title)]
+        [:h2.text-2xl.text-center.mb-8.text-indigo-300.font-light 
+         {:style (when shiny-enabled? 
+                   {:text-shadow "0 0 5px rgba(99, 102, 241, 0.3)"})}
+         (t :app-subtitle)]]
+       [:div.controls-container.mt-4
+        {:class (when rtl? "rtl")}
+        (if rtl?
+          [i18n/language-selector]
+          [toggle-switch])
+        (if rtl?
+          [toggle-switch]
+          [i18n/language-selector])]]
       [:div.w-full.max-w-5xl
        [explanation]
        [input-field]
@@ -495,6 +546,13 @@
 
 (defn mount-root []
   (rf/dispatch-sync [:initialize])
+  
+  ;; Apply initial shiny effects to body ONLY if enabled in app state
+  (let [shiny-enabled? @(rf/subscribe [:shiny-effects-enabled])
+        body (.-body js/document)]
+    (when (and body shiny-enabled?)
+      (.add (.-classList body) "shiny-enabled")))
+  
   (let [root (rdomc/create-root (.getElementById js/document "app"))]
     (rdomc/render root [main-panel])))
 
