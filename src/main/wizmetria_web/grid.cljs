@@ -59,7 +59,7 @@
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]
-       ^{:key letter}
+       ^{:key (str "letter-" letter)}
        [:g
         [:text {:x x :y y 
                 :text-anchor "middle" 
@@ -71,28 +71,28 @@
      ;; Draw lines between consecutive letters in the word
      (when (seq cleaned-word)
        (let [word-letters (seq cleaned-word)
-             pairs (map vector word-letters (rest word-letters))]
+             pairs (map-indexed vector (map vector word-letters (rest word-letters)))]
          [:g
           ;; Lines between consecutive letters
-          (for [[from-letter to-letter] pairs
+          (for [[idx [from-letter to-letter]] pairs
                 :let [from-pos (get letter-map from-letter)
                       to-pos (get letter-map to-letter)
                       ;; Calculate intersections with the circle
                       from-intersection (line-circle-intersection from-pos)
                       to-intersection (line-circle-intersection to-pos)]
                 :when (and from-pos to-pos)]
-            ^{:key (str from-letter to-letter)}
+            ^{:key (str "line-" from-letter to-letter "-" idx)}
             [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
                     :x2 (:x to-intersection) :y2 (:y to-intersection)
                     :stroke "#8b5cf6" :stroke-width 2.5}])
           
           ;; Circles at letter positions
-          (for [letter word-letters
+          (for [[idx letter] (map-indexed vector word-letters)
                 :let [pos (get letter-map letter)
                       ;; Calculate intersection with the circle edge
                       intersection (line-circle-intersection pos)]
                 :when pos]
-            ^{:key (str "dot-" letter)}
+            ^{:key (str "dot-" letter "-" idx)}
             [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
                       :fill "#a855f7"}])]))]))
 
@@ -155,12 +155,10 @@
                                              ord1 (ordinal c1)
                                              ord2 (ordinal c2)]
                                        :when (= (mod (+ ord1 ord2) 26) (mod (+ axis-id 2) 26))]
-                                   [c1 c2])]
-                        (filter (fn [[c1 c2]] 
+                                   [c1 c2 i j])]
+                        (filter (fn [[c1 c2 i j]] 
                                   ;; Filter out adjacent letters that are just part of the word sequence
-                                  (let [idx1 (.indexOf cleaned-word c1)
-                                        idx2 (.indexOf cleaned-word c2)]
-                                    (not= (Math/abs (- idx1 idx2)) 1)))
+                                  (not= (Math/abs (- i j)) 1))
                                 pairs)))]
     
     [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
@@ -170,7 +168,7 @@
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]
-       ^{:key letter}
+       ^{:key (str "alphabet-" letter)}
        [:g
         [:text {:x x :y y 
                 :text-anchor "middle" 
@@ -182,18 +180,18 @@
      ;; Draw word connections and highlighting
      (when (seq cleaned-word)
        (let [word-letters (seq cleaned-word)
-             pairs (map vector word-letters (rest word-letters))]
+             pairs (map-indexed (fn [idx [a b]] [a b idx]) (map vector word-letters (rest word-letters)))]
          [:g
           ;; Draw mirror pair connections (if applicable)
           (when (and (not is-rotation-axis) has-symmetry (seq mirror-pairs))
             [:g 
-             (for [[c1 c2] mirror-pairs
+             (for [[c1 c2 i j] mirror-pairs
                    :let [pos1 (get letter-map c1)
                          pos2 (get letter-map c2)
                          intersection1 (line-circle-intersection pos1)
                          intersection2 (line-circle-intersection pos2)]
                    :when (and pos1 pos2)]
-               ^{:key (str "mirror-" c1 c2)}
+               ^{:key (str "mirror-" c1 c2 "-" i "-" j)}
                [:g
                 ;; Thin background line
                 [:line {:x1 (:x intersection1) :y1 (:y intersection1)
@@ -214,13 +212,13 @@
           ;; Draw rotation pair connections (if applicable)
           (when (and is-rotation-axis has-symmetry)
             [:g 
-             (for [[c1 c2] rotation-pairs
+             (for [[idx [c1 c2]] (map-indexed vector rotation-pairs)
                    :let [pos1 (get letter-map c1)
                          pos2 (get letter-map c2)
                          intersection1 (line-circle-intersection pos1)
                          intersection2 (line-circle-intersection pos2)]
                    :when (and pos1 pos2)]
-               ^{:key (str "rotation-" c1 c2)}
+               ^{:key (str "rotation-" c1 c2 "-" idx)}
                [:g
                 ;; Thinner background line
                 [:line {:x1 (:x intersection1) :y1 (:y intersection1)
@@ -258,13 +256,13 @@
                       :fill (if is-rotation-axis "#f472b6" "#c026d3")}]])
           
           ;; Regular word connection lines
-          (for [[from-letter to-letter] pairs
+          (for [[from-letter to-letter idx] pairs
                 :let [from-pos (get letter-map from-letter)
                       to-pos (get letter-map to-letter)
                       from-intersection (line-circle-intersection from-pos)
                       to-intersection (line-circle-intersection to-pos)]
                 :when (and from-pos to-pos)]
-            ^{:key (str from-letter to-letter)}
+            ^{:key (str "line-" from-letter to-letter "-" idx)}
             [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
                     :x2 (:x to-intersection) :y2 (:y to-intersection)
                     :stroke "#8b5cf6" :stroke-width 2.5}])
