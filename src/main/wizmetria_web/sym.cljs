@@ -51,10 +51,18 @@
   (sym? s 27))
 
 (defn symmetric-word? [word]
-  (some true? (map #(symmetric? word %) (range 0 27))))
+  (some true? (map #(symmetric? word %) (range 1 53))))
 
 (defn clean [s]
   (util/clean s))
+
+(defn axis-id-for-word 
+  "Returns the axis-id where the word has symmetry, or nil if no symmetry"
+  [word]
+  (first
+    (for [sum (range 1 53)
+          :when (symmetric? word sum)]
+      (mod (- (sum->id sum) 2) 26))))
 
 (defn- filter-sym [id coll] 
   (filter #(symmetric? % (+ id 2)) coll))

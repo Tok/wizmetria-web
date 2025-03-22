@@ -3,7 +3,8 @@
             [reagent.core :as r]
             [re-frame.core :as rf]
             [wizmetria-web.sym :as sym]
-            [wizmetria-web.grid :as grid]))
+            [wizmetria-web.grid :as grid]
+            [wizmetria-web.util :as util]))
 
 ;; -- Subscriptions --
 (rf/reg-sub
@@ -51,21 +52,40 @@
        {:on-click #(rf/dispatch [:check-symmetry])}
        "Check"]]]))
 
+(defn check-word []
+  (let [word @(rf/subscribe [:word])
+        cleaned-word (util/clean word)
+        axis-id (when (seq cleaned-word) (sym/axis-id-for-word cleaned-word))
+        has-symmetry (some? axis-id)]
+    [:div.mt-4.text-center
+     (if (empty? cleaned-word)
+       [:p.text-gray-400 "Enter a word to check for symmetry"]
+       (if has-symmetry
+         [:p.text-green-400 
+          (str "\"" cleaned-word "\" has symmetry around axis " 
+               (when axis-id (sym/id->axis-name axis-id)))]
+         [:p.text-red-400 
+          (str "\"" cleaned-word "\" does not have circular symmetry")]))]))
+
 (defn symmetry-display []
   (let [results @(rf/subscribe [:symmetry-results])
-        word @(rf/subscribe [:word])]
+        word @(rf/subscribe [:word])
+        cleaned-word (util/clean word)
+        word-axis-id (when (not-empty cleaned-word) (sym/axis-id-for-word cleaned-word))]
     (when (and results (seq results))
       [:div.mt-8.w-full.flex.flex-col.items-center
        [:h2.text-2xl.mb-6.text-center.text-purple-300.font-semibold "Symmetry Results"]
-       [:div.flex.flex-wrap.justify-center.gap-8.w-full
+       [check-word]
+       [:div.flex.flex-wrap.justify-center.gap-8.w-full.mt-6
         (for [[axis-id symmetric-words] results
-              :when (seq symmetric-words)]
+              :when (seq symmetric-words)
+              :let [has-symmetry (= axis-id word-axis-id)]]
           ^{:key axis-id}
           [:div.bg-gray-800.p-5.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700.transform.transition-all.duration-300.hover:scale-105
            [:h3.text-xl.mb-3.text-center.text-indigo-300.font-medium 
             (str "Axis: " (sym/id->axis-name axis-id))]
            [:div.alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1
-            [grid/symmetry-view word axis-id]]])]])))
+            [grid/symmetry-view word axis-id has-symmetry]]])]])))
 
 (defn explanation []
   [:div.bg-gray-800.p-6.rounded-lg.shadow-lg.mb-8.border.border-purple-700.text-gray-200

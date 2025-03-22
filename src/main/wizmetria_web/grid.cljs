@@ -118,7 +118,7 @@
                 :fill "#d1d5db"} letter]])]))
 
 ;; Combined view showing both the word connections and its symmetry axis
-(defn symmetry-view [word axis-id]
+(defn symmetry-view [word axis-id has-symmetry]
   (let [positions (letter-positions)
         letter-map (into {} (map (fn [pos] [(:letter pos) pos]) positions))
         cleaned-word (util/clean word)
@@ -137,9 +137,10 @@
      [:circle {:cx center-x :cy center-y :r radius 
                :fill "none" :stroke "#6b7280" :stroke-width 1}]
      
-     ;; Draw symmetry axis
-     [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
-             :stroke "#c026d3" :stroke-width 2 :stroke-dasharray "5,5"}]
+     ;; Draw symmetry axis only if the word has symmetry around this axis
+     (when has-symmetry
+       [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
+               :stroke "#c026d3" :stroke-width 2 :stroke-dasharray "5,5"}])
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]
