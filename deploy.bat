@@ -25,6 +25,21 @@ REM Switch to gh-pages branch
 echo Switching to gh-pages branch...
 git checkout gh-pages || git checkout -b gh-pages origin/gh-pages
 
+REM Create .gitignore to ignore node_modules
+echo Setting up .gitignore for gh-pages...
+(
+echo node_modules/
+echo .shadow-cljs/
+echo public/
+) > .gitignore
+
+REM Clean any untracked files (like node_modules)
+echo Cleaning untracked files from gh-pages branch...
+git add .gitignore
+git commit -m "Add .gitignore for clean deployment" --allow-empty
+git rm -r --cached node_modules 2>nul
+git rm -r --cached .shadow-cljs 2>nul
+
 REM Copy the built files from public/ directory
 echo Copying built files...
 git checkout %CURRENT_BRANCH% -- public/
@@ -42,13 +57,13 @@ copy /Y public\*.html .
 REM Create js directory if it doesn't exist
 if not exist js mkdir js
 REM Copy JS files
-xcopy /E /Y /I public\js\* js\ > nul
+xcopy /E /Y /I public\js\* js\ > nul 2>&1
 
-REM Add only specific updated files to git (avoid node_modules)
+REM Add only specific updated files to git
 echo Adding updated files to git...
-git add index.html
-git add js/main.js
-git add js/manifest.edn
+git add index.html .gitignore
+if exist js\main.js git add js/main.js
+if exist js\manifest.edn git add js/manifest.edn
 
 REM Prepare timestamp for commit message
 for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set dt=%%a
@@ -61,7 +76,7 @@ set Sec=!dt:~12,2!
 
 REM Commit changes with date stamp (using delayed expansion)
 echo Committing changes...
-git commit -m "Deploy: !YYYY!-!MM!-!DD! !HH!:!Min!:!Sec!"
+git commit -m "Deploy: !YYYY!-!MM!-!DD! !HH!:!Min!:!Sec!" --allow-empty
 
 REM Push to remote gh-pages branch
 echo Pushing to remote gh-pages branch...

@@ -26,6 +26,21 @@ try {
     git checkout -b gh-pages origin/gh-pages
 }
 
+# Create .gitignore to ignore node_modules
+Write-Host "Setting up .gitignore for gh-pages..." -ForegroundColor Cyan
+@"
+node_modules/
+.shadow-cljs/
+public/
+"@ | Out-File -FilePath ".gitignore" -Encoding UTF8 -Force
+
+# Clean any untracked files (like node_modules)
+Write-Host "Cleaning untracked files from gh-pages branch..." -ForegroundColor Cyan
+git add .gitignore
+git commit -m "Add .gitignore for clean deployment" --allow-empty
+git rm -r --cached node_modules 2>$null
+git rm -r --cached .shadow-cljs 2>$null
+
 # Copy the built files from public/ directory
 Write-Host "Copying built files..." -ForegroundColor Cyan
 git checkout $CURRENT_BRANCH -- public/
@@ -36,14 +51,6 @@ if (-not (Test-Path -Path "public" -PathType Container)) {
     git checkout $CURRENT_BRANCH
     exit 1
 }
-
-# Create .gitignore to ignore node_modules
-Write-Host "Setting up .gitignore for gh-pages..." -ForegroundColor Cyan
-@"
-node_modules/
-.shadow-cljs/
-public/
-"@ | Out-File -FilePath ".gitignore" -Encoding UTF8 -Force
 
 # Update only HTML and JS files in the root (for GitHub Pages)
 Write-Host "Updating HTML and JS files for GitHub Pages..." -ForegroundColor Cyan
@@ -72,7 +79,7 @@ if (Test-Path -Path "js\manifest.edn") {
 # Commit changes with timestamp
 Write-Host "Committing changes..." -ForegroundColor Cyan
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-git commit -m "Deploy: $timestamp"
+git commit -m "Deploy: $timestamp" --allow-empty
 
 # Push to remote gh-pages branch
 Write-Host "Pushing to remote gh-pages branch..." -ForegroundColor Cyan

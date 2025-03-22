@@ -25,6 +25,21 @@ git fetch origin
 echo "Switching to gh-pages branch..."
 git checkout gh-pages || git checkout -b gh-pages origin/gh-pages
 
+# Create .gitignore to ignore node_modules
+echo "Setting up .gitignore for gh-pages..."
+cat > .gitignore << EOF
+node_modules/
+.shadow-cljs/
+public/
+EOF
+
+# Clean any untracked files (like node_modules)
+echo "Cleaning untracked files from gh-pages branch..."
+git add .gitignore
+git commit -m "Add .gitignore for clean deployment" --allow-empty
+git rm -r --cached node_modules 2>/dev/null || true
+git rm -r --cached .shadow-cljs 2>/dev/null || true
+
 # Copy the built files from public/ directory
 echo "Copying built files..."
 git checkout $CURRENT_BRANCH -- public/
@@ -44,17 +59,21 @@ cp -f public/*.html .
 # Create js directory if it doesn't exist
 mkdir -p js
 # Copy JS files
-cp -rf public/js/* js/
+if [ -d "public/js" ]; then
+  cp -rf public/js/* js/ 2>/dev/null || true
+else
+  echo "WARNING: public/js directory not found. Continuing anyway..."
+fi
 
-# Add only specific updated files to git (avoid node_modules)
+# Add only specific updated files to git
 echo "Adding specific updated files to git..."
-git add index.html
-git add js/main.js
-git add js/manifest.edn
+git add index.html .gitignore
+[ -f "js/main.js" ] && git add js/main.js
+[ -f "js/manifest.edn" ] && git add js/manifest.edn
 
 # Commit changes with date stamp
 echo "Committing changes..."
-git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')"
+git commit -m "Deploy: $(date '+%Y-%m-%d %H:%M:%S')" --allow-empty
 
 # Push to remote gh-pages branch
 echo "Pushing to remote gh-pages branch..."
