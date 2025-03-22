@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+   <msapplication>
+     <tile>
+       <square70x70logo src="https://tok.github.io/wizmetria-web/img/favicon-64x64.png"/>
+       <square150x150logo src="https://tok.github.io/wizmetria-web/img/favicon-192x192.png"/>
+       <TileColor>#1F2937</TileColor>
+     </tile>
+   </msapplication>
+</browserconfig> 
