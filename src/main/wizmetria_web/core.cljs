@@ -6,6 +6,7 @@
             [wizmetria-web.sym :as sym]
             [wizmetria-web.grid :as grid]
             [wizmetria-web.util :as util]
+            [wizmetria-web.i18n :as i18n :refer [t]]
             [clojure.string :as str]))
 
 ;; -- Subscriptions --
@@ -33,10 +34,22 @@
 (rf/reg-event-db
  :initialize
  (fn [_ _]
-   {:word "WIZARD"
-    :symmetry-results (sym/evaluate [(sym/clean "WIZARD")])
-    :wordlist-stats nil
-    :processing-state nil}))
+   ;; First create a basic app DB
+   (let [initial-db {:word "WIZARD"
+                     :symmetry-results (sym/evaluate [(sym/clean "WIZARD")])
+                     :wordlist-stats nil
+                     :processing-state nil}]
+     
+     ;; Initialize language separately
+     (js/setTimeout 
+      #(do
+         (rf/dispatch [:init-language])
+         ;; Initialize the click outside handler for language dropdown after DOM is ready
+         (js/setTimeout i18n/init-click-outside 100))
+      100)
+     
+     ;; Return the initial database
+     initial-db)))
 
 (rf/reg-event-db
  :update-word
@@ -201,7 +214,7 @@
 (defn input-field []
   (let [word @(rf/subscribe [:word])]
     [:div.flex.flex-col.items-center.mb-4
-     [:label.text-lg.mb-1.text-purple-200 "Enter a word:"]
+     [:label.text-lg.mb-1.text-purple-200 (t :input-label)]
      [:div.flex.w-full.max-w-md.shadow-lg
       [:input.w-full.px-4.py-2.bg-gray-800.border-2.border-purple-700.rounded-l-lg.focus:outline-none.focus:ring-2.focus:ring-indigo-500.text-gray-100.placeholder-gray-500
        {:type "text"
@@ -210,7 +223,7 @@
         :on-change #(rf/dispatch [:update-word (-> % .-target .-value)])}]
       [:button.bg-purple-700.text-white.px-5.py-2.rounded-r-lg.hover:bg-purple-600.focus:outline-none.focus:ring-2.focus:ring-purple-500.transition-colors.duration-200.font-medium
        {:on-click #(rf/dispatch [:check-symmetry])}
-       "Check"]]]))
+       (t :analyze-button)]]]))
 
 (defn check-word []
   (let [word @(rf/subscribe [:word])
@@ -223,21 +236,21 @@
                                   (sym/rotation-symmetric-word? cleaned-word))]
     [:div.mt-4.text-center
      (if (empty? cleaned-word)
-       [:p.text-gray-400 "Enter a word to check for symmetry"]
+       [:p.text-gray-400 (str (t :input-label) " " (t :for) " " (t :symmetry-axis))]
        (cond
          has-mirror-symmetry
          [:p.text-green-400 
-          (str "\"" cleaned-word "\" has mirror symmetry around axis " 
+          (str "\"" cleaned-word "\" " (t :with) " " (t :mirror-symmetry) " " (t :around-axis) " " 
                (when axis-id (sym/id->axis-name axis-id)))]
          
          has-rotation-symmetry
          [:p.text-green-400 
-          (str "\"" cleaned-word "\" has rotational symmetry around axis " 
+          (str "\"" cleaned-word "\" " (t :with) " " (t :rotation-symmetry) " " (t :around-axis) " " 
                (when rotation-axis-id (sym/id->axis-name rotation-axis-id)))]
          
          :else
          [:p.text-red-400 
-          (str "\"" cleaned-word "\" does not have circular symmetry")]))]))
+          (str "\"" cleaned-word "\" " (t :no-symmetry))]))]))
 
 (defn symmetry-display []
   (let [results @(rf/subscribe [:symmetry-results])
@@ -252,16 +265,16 @@
     [:div
      (when (and results (seq results))
        [:div.mt-4.w-full.flex.flex-col.items-center
-        [:h2.text-xl.mb-3.text-center.text-purple-300.font-semibold "Symmetry Results"]
+        [:h2.text-xl.mb-3.text-center.text-purple-300.font-semibold (t :symmetry-results)]
         [check-word]
         [:div.flex.flex-wrap.justify-center.gap-6.w-full.mt-4
          ;; Show a single visualization with correct symmetry information
          [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700.transform.transition-all.duration-300.hover:scale-105
           [:h3.text-lg.mb-2.text-center.text-indigo-300.font-medium 
            (cond
-             has-mirror-symmetry "Mirror Symmetry"
-             has-rotation-symmetry "Rotation Symmetry"
-             :else "No Symmetry")]
+             has-mirror-symmetry (t :mirror-symmetry)
+             has-rotation-symmetry (t :rotation-symmetry)
+             :else (t :no-symmetry))]
           [:div.alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1
            [grid/symmetry-view word
             (cond 
@@ -272,12 +285,16 @@
 
 (defn explanation []
   [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.mb-4.border.border-purple-700.text-gray-200
-   [:h2.text-xl.mb-2.text-purple-300.font-semibold "About Wizmetria"]
-   [:p.mb-2.text-sm "Wizmetria detects alphabetical circular symmetry in words by arranging the alphabet in a circle and checking if a word has symmetry when its letters are connected in sequence. There are 13 possible axes of symmetry, either between two letters (A-N) or between the space of two letters (AB-NO)."]
+   [:h2.text-xl.mb-2.text-purple-300.font-semibold (t :explanation-title)]
+   [:p.mb-2.text-sm (t :explanation-text)]
+   
+   [:p.mb-2.text-sm (t :explanation-types)]
+   [:p.mb-2.text-sm (t :explanation-mirror)]
+   [:p.mb-2.text-sm (t :explanation-rotation)]
    
    [:div.flex.flex-col.md:flex-row.gap-4.text-sm
     [:div.flex-1
-     [:p.mb-1 [:span.text-indigo-300.font-medium "Mirror symmetry"] " examples:"]
+     [:p.mb-1 [:span.text-indigo-300.font-medium (t :mirror-symmetry)] " " (t :examples) ":"]
      [:p 
       [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
        {:on-click #(rf/dispatch [:update-word "WIZARD"])} "WIZARD"] ", "
@@ -301,8 +318,10 @@
        {:on-click #(rf/dispatch [:update-word "CROTCHET"])} "CROTCHET"]]]
     
     [:div.flex-1
-     [:p.mb-1 [:span.text-indigo-300.font-medium "Rotational symmetry"] " examples:"]
+     [:p.mb-1 [:span.text-indigo-300.font-medium (t :rotation-symmetry)] " " (t :examples) ":"]
      [:p 
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "TIP"])} "TIP"] ", "
       [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
        {:on-click #(rf/dispatch [:update-word "HYRULE"])} "HYRULE"] ", "
       [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
@@ -318,7 +337,7 @@
         stats @(rf/subscribe [:wordlist-stats])]
     [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.border.border-purple-700.text-gray-200.mt-8
      [:div.flex.justify-between.items-center
-      [:h3.text-xl.text-purple-300.font-semibold "Analyze Text File"]
+      [:h3.text-xl.text-purple-300.font-semibold (t :text-analysis-title)]
       [:div.flex.items-center
        (when-not (or (nil? processing-state) (= (:status processing-state) :complete))
          [:div.flex.items-center.mr-3
@@ -334,7 +353,9 @@
           :on-change (fn [e]
                       (when-let [file (-> e .-target .-files (aget 0))]
                         (rf/dispatch [:process-file file])))}]
-        "Select file"]]]
+        (t :upload-button)]]]
+     
+     [:p.text-sm.text-gray-300.mt-2.mb-4 (t :text-analysis-description)]
      
      ;; Progress indicator
      (when processing-state
@@ -343,7 +364,7 @@
           :reading
           [:div
            [:div.text-sm.text-gray-400.mb-1 
-            (str "Reading file" (when-let [name (:file-name processing-state)] (str ": " name)))]
+            (str (t :reading-status) (when-let [name (:file-name processing-state)] (str ": " name)))]
            [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
             [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
              {:style {:width (str (:progress processing-state) "%")}}]]]
@@ -351,7 +372,7 @@
           :processing
           [:div
            [:div.text-sm.text-gray-400.mb-1 
-            (str "Processing text: " 
+            (str (t :processing-text-status) ": " 
                  (:processed-chunks processing-state) 
                  "/" 
                  (:total-chunks processing-state) 
@@ -363,35 +384,35 @@
           :finding-symmetry
           [:div
            [:div.text-sm.text-gray-400.mb-1 
-            (str "Preparing to analyze " (:word-count processing-state) " words")]
+            (str (t :finding-symmetry) " " (:word-count processing-state) " words")]
            [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
             [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
              {:style {:width (str (:progress processing-state) "%")}}]]]
           
           :mirror-symmetry
           [:div
-           [:div.text-sm.text-gray-400.mb-1 "Finding words with mirror symmetry"]
+           [:div.text-sm.text-gray-400.mb-1 (str (t :finding-symmetry) " " (t :mirror-symmetry))]
            [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
             [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
              {:style {:width (str (:progress processing-state) "%")}}]]]
           
           :rotational-symmetry
           [:div
-           [:div.text-sm.text-gray-400.mb-1 "Finding words with rotational symmetry"]
+           [:div.text-sm.text-gray-400.mb-1 (str (t :finding-symmetry) " " (t :rotation-symmetry))]
            [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
             [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
              {:style {:width (str (:progress processing-state) "%")}}]]]
           
           :done
-          [:div.text-sm.text-gray-400.mb-1 "Finalizing analysis..."]
+          [:div.text-sm.text-gray-400.mb-1 (str (t :processing-status) "...")]
           
           :complete
           (when stats
             [:div.text-sm.text-green-400.mb-1 
-             (str "Found " 
+             (str (t :completed-status) ": " 
                   (+ (get-in stats [:mirror :count]) 
                      (get-in stats [:rotation :count])) 
-                  " words with symmetry")])
+                  " " (t :stats-symmetric-words))])
           
           nil)])]))
 
@@ -400,24 +421,24 @@
   (let [stats @(rf/subscribe [:wordlist-stats])]
     (when stats
       [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.mb-4.border.border-purple-700.text-gray-200
-       [:h2.text-xl.mb-3.text-purple-300.font-semibold "Word List Analysis"]
+       [:h2.text-xl.mb-3.text-purple-300.font-semibold (t :stats-title)]
        
        [:div.grid.grid-cols-1.md:grid-cols-3.gap-3.mb-4
         [:div.bg-gray-700.rounded-lg.p-3.flex.flex-col.items-center.justify-center
          [:span.text-2xl.font-bold.text-indigo-300 (:total-words stats)]
-         [:span.text-xs.text-gray-300 "Total Unique Words"]]
+         [:span.text-xs.text-gray-300 (t :stats-unique-words)]]
         
         [:div.bg-gray-700.rounded-lg.p-3.flex.flex-col.items-center.justify-center
          [:span.text-2xl.font-bold.text-indigo-300 (get-in stats [:mirror :count])]
-         [:span.text-xs.text-gray-300 "Mirror Symmetry Words"]]
+         [:span.text-xs.text-gray-300 (t :stats-mirror-words)]]
         
         [:div.bg-gray-700.rounded-lg.p-3.flex.flex-col.items-center.justify-center
          [:span.text-2xl.font-bold.text-indigo-300 (get-in stats [:rotation :count])]
-         [:span.text-xs.text-gray-300 "Rotational Symmetry Words"]]]
+         [:span.text-xs.text-gray-300 (t :stats-rotation-words)]]]
        
        ;; Top 10 longest mirror symmetry words
        [:div.mb-4
-        [:h3.text-lg.mb-2.text-indigo-300.font-medium "Top 10 Longest Mirror Symmetry Words"]
+        [:h3.text-lg.mb-2.text-indigo-300.font-medium (str "Top 10 " (t :mirror-symmetry) " " (t :for))]
         [:div.flex.flex-wrap.gap-2
          (for [word (get-in stats [:mirror :top-10])]
            ^{:key word}
@@ -427,7 +448,7 @@
        
        ;; Top 10 longest rotational symmetry words
        [:div.mb-4
-        [:h3.text-lg.mb-2.text-indigo-300.font-medium "Top 10 Longest Rotational Symmetry Words"]
+        [:h3.text-lg.mb-2.text-indigo-300.font-medium (str "Top 10 " (t :rotation-symmetry) " " (t :for))]
         [:div.flex.flex-wrap.gap-2
          (for [word (get-in stats [:rotation :top-10])]
            ^{:key word}
@@ -437,7 +458,7 @@
        
        ;; Mirror symmetry by axis
        [:div
-        [:h3.text-lg.mb-2.text-indigo-300.font-medium "Words by Symmetry Axis"]
+        [:h3.text-lg.mb-2.text-indigo-300.font-medium (str (t :for) " " (t :by) " " (t :symmetry-axis))]
         [:div.grid.grid-cols-1.md:grid-cols-2.gap-3
          (for [[axis-id words] (get-in stats [:mirror :by-axis])
                :when (seq words)
@@ -446,7 +467,7 @@
            ^{:key axis-id}
            [:div.bg-gray-700.rounded-lg.p-3
             [:h4.text-indigo-200.font-medium.mb-1.text-sm
-             (str axis-name " axis (" (count words) " words)")]
+             (str axis-name " " (t :axis) " (" (count words) " " (t :for) ")")]
             [:div.flex.flex-wrap.gap-1
              (for [word top-words]
                ^{:key word}
@@ -457,20 +478,25 @@
 ;; -- Footer component --
 (defn footer []
   [:div.w-full.text-center.py-3.text-gray-400.text-xs.border-t.border-gray-800
-   [:p "© 2025 Arcanum Wizmetrics Unlimited • Illuminating Patterns Through Circular Symmetry"]])
+   [:p (t :footer-text)]])
 
 (defn main-panel []
-  [:div.min-h-screen.bg-gray-900.text-purple-100.flex.flex-col
-   [:div.flex-grow.px-4.py-8.flex.flex-col.items-center
-    [:h1.text-5xl.text-center.mb-4.text-purple-300.font-bold.tracking-wider "Wizmetria"]
-    [:h2.text-2xl.text-center.mb-8.text-indigo-300.font-light "Alphabetical Circular Symmetry Detection"]
-    [:div.w-full.max-w-5xl
-     [explanation]
-     [input-field]
-     [symmetry-display]
-     [text-analysis]
-     [wordlist-stats]]]
-   [footer]])
+  (let [text-direction @(rf/subscribe [:text-direction])]
+    [:div.min-h-screen.bg-gray-900.text-purple-100.flex.flex-col
+     {:dir text-direction}
+     [:div.flex-grow.px-4.py-8.flex.flex-col.items-center
+      [:div.flex.items-center.justify-between.w-full.max-w-5xl
+       [:div
+        [:h1.text-5xl.text-center.mb-4.text-purple-300.font-bold.tracking-wider (t :app-title)]
+        [:h2.text-2xl.text-center.mb-8.text-indigo-300.font-light (t :app-subtitle)]]
+       [i18n/language-selector]]
+      [:div.w-full.max-w-5xl
+       [explanation]
+       [input-field]
+       [symmetry-display]
+       [text-analysis]
+       [wordlist-stats]]]
+     [footer]]))
 
 (defn mount-root []
   (rf/dispatch-sync [:initialize])
