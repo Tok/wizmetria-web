@@ -1,6 +1,25 @@
 # Wizmetria
 
+[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://tok.github.io/wizmetria-web/)
+[![Language](https://img.shields.io/badge/language-ClojureScript-blue.svg)](https://clojurescript.org/)
+[![Framework](https://img.shields.io/badge/framework-Reagent-orange.svg)](https://reagent-project.github.io/)
+
+[Live Website](https://tok.github.io/wizmetria-web/)
+
 Wizmetria is a web application that detects alphabetical circular symmetry in words. It arranges the alphabet in a circle and checks if a word has symmetry when its letters are connected in sequence.
+
+## Table of Contents
+- [What is Alphabetical Circular Symmetry?](#what-is-alphabetical-circular-symmetry)
+- [Examples](#examples)
+  - [Visualization of Example Words](#visualization-of-example-words)
+  - [More Examples](#more-examples)
+- [Running the Application](#running-the-application)
+- [Technology Stack](#technology-stack)
+- [Technical Implementation](#technical-implementation)
+- [How It Works](#how-it-works)
+- [Vibe Coded By](#vibe-coded-by)
+- [Original Sources](#original-sources)
+- [Contributing](#contributing)
 
 ## What is Alphabetical Circular Symmetry?
 
@@ -146,8 +165,31 @@ T.'                  /   /H
 - M-Z axis: GAYS, HUER, KAYO, KOKO, MEUM, MMMM, QUEI, YAYA, YWCA
 - MN-ZA axis: BEVY, GIRT, GRIT, HOLS, IZAR, KLOP, LEVO, POLK, TRIG, VIRE, VOLE, WIRD, WOLD, ZIRA
 
+## Try It Yourself
+
+Visit the [live website](https://tok.github.io/wizmetria-web/) to try detecting symmetry in your own words!
+
+1. Type a word in the input field
+2. See instant visualization of the word on the alphabet circle
+3. Get information about any symmetry axes detected
+
 ## Running the Application
 
+### Prerequisites
+- Node.js (v14 or higher)
+- npm or yarn
+
+### Installation
+```bash
+# Clone the repository
+git clone https://github.com/tok/wizmetria-web.git
+cd wizmetria-web
+
+# Install dependencies
+npm install
+```
+
+### Development
 To run the application in development mode:
 
 ```bash
@@ -246,3 +288,7 @@ To contribute:
 1. Fork the repository
 2. Create your feature branch
 3. Submit a pull request 
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE). 
