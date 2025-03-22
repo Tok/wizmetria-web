@@ -116,9 +116,18 @@
    [:p.mb-4 "Wizmetria detects alphabetical circular symmetry in words. It arranges the alphabet in a circle and checks if a word has symmetry when its letters are connected in sequence."]
    [:p.mb-4 "There are 13 possible axes of symmetry. An axis always goes through the center of the circle, but can be between two letters (A-N) or between the space of two letters (AB-NO)."]
    [:p "Famous examples with symmetry include "
-    [:span.text-indigo-300.font-medium "WIZARD"]", "
-    [:span.text-indigo-300.font-medium "JAGUAR"]", and "
-    [:span.text-indigo-300.font-medium "METAPH"]"."]])
+    [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+     {:on-click #(do (rf/dispatch [:update-word "WIZARD"])
+                    (rf/dispatch [:check-symmetry]))}
+     "WIZARD"]", "
+    [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+     {:on-click #(do (rf/dispatch [:update-word "JAGUAR"])
+                    (rf/dispatch [:check-symmetry]))}
+     "JAGUAR"]", and "
+    [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+     {:on-click #(do (rf/dispatch [:update-word "METAPH"])
+                    (rf/dispatch [:check-symmetry]))}
+     "METAPH"]"."]])
 
 (defn main-panel []
   [:div.min-h-screen.bg-gray-900.text-purple-100.px-4.py-8.flex.flex-col.items-center
