@@ -6,7 +6,8 @@
     "dev": "shadow-cljs watch app",
     "build": "shadow-cljs release app",
     "test": "shadow-cljs compile test",
-    "deploy": "node -e \"require('fs').existsSync('deploy.bat') && process.platform === 'win32' ? require('child_process').execSync('deploy.bat', {stdio: 'inherit'}) : require('child_process').execSync('bash deploy.sh', {stdio: 'inherit'})\""
+    "deploy": "node -e \"require('fs').existsSync('deploy.bat') && process.platform === 'win32' ? require('child_process').execSync('deploy.bat', {stdio: 'inherit'}) : require('child_process').execSync('bash deploy.sh', {stdio: 'inherit'})\"",
+    "deploy-powershell": "powershell -ExecutionPolicy Bypass -File ./deploy.ps1"
   },
   "dependencies": {
     "react": "^18.2.0",
