@@ -10,12 +10,141 @@ Each axis always goes through the center of the circle, but can be:
 - Between two letters (A-N, B-O, etc.)
 - Between the space of two letters (AB-NO, BC-OP, etc.)
 
+The Wizmetria Algorithm checks if a word has symmetry when its letters are connected on a circle defined by the alphabet:
+
+```
+    YZ A BC
+  X         D
+VW           EF
+U             G
+T             H
+SR           JI
+  Q         K
+    PO N ML
+```
+
+There are 2 * 13 possible axes of symmetry. An axis always goes through the center of the circle, but can be between two letters A-N or between the space of two letters AB-NO.
+
 ## Examples
 
 Famous examples with symmetry include:
-- WIZARD
-- JAGUAR
-- METAPH
+- WIZARD (MN-ZA axis)
+- JAGUAR (A-N axis)
+- METAPH (JK-WX axis)
+
+### Visualization of Example Words
+
+#### WIZARD
+```
+          Z--A  B           
+       Y   \/      C        
+    X      / '.      /D     
+  W\      /    \   .'   E   
+ V   '-. /      .-'      F  
+       .''-.  .'  '.        
+U     /    .-''.    \     G 
+T    /   .'     '-.  '.   H 
+    / .-'           ''..\   
+ S .-'                  \I  
+  R/                    J   
+    Q                 K     
+       P           L        
+          O  N  M
+```
+
+#### JAGUAR
+```
+          Z  A  B           
+       Y  .-' '-.  C        
+    X   .' /   \ '.   D     
+  W   .'  /     \  '.   E   
+ V  .'   /       \   '.  F  
+  .'   .'         '.   '.   
+U-----/-------------------G 
+T    /               \    H 
+    /                 \     
+ S /                   \ I  
+  R                     J   
+    Q                 K     
+       P           L        
+          O  N  M
+```
+
+#### METAPH
+```
+          Z  A  B           
+       Y   /       C        
+    X    .' /         D     
+  W    .'             .'E   
+ V   .'    /    ..''/  / F  
+   .'     ..''/       /     
+U / ..''/ /           /   G 
+T.'                  /   /H 
+         /          ..''    
+ S               .-'     I  
+  R     /     .-' /     J   
+    Q     .-'     /   K     
+       P/        / L        
+          O  N  M
+```
+
+### More Examples
+
+#### Words with Six or More Letters
+- A-N axis: JAGUAR, MAOMAO, PALPAL, UNSING, UNSEWING
+- AB-NO axis: VOTING
+- B-O axis: PISKUN, PURLIN
+- DE-QR axis: PUTONS, UNSPUN
+- E-R axis: FIDFAD, REDEFER
+- G-T axis: BEMAIL, JIGGED, OXYOPY, TICKET
+- HI-UV axis: CHAPIN, PHOBIA
+- IJ-VW axis: ANGLER, DORADO
+- J-W axis: FOGMEN, LAKISH
+- JK-WX axis: AGLINT, METAPH, PINGLE, PLATIE, TAPETA, BATHMATS
+- KL-XY axis: CRINET, DEHORS, DIVANS, HERERO, PINING, ROTCHE, CROTCHET
+- L-Y axis: EDUCTS, RECUSF, SECLUSE
+- LM-YZ axis: EFTEST, TRUDGE
+- M-Z axis: FLUENT, HUMMER, NETFUL, VULNED
+- MN-ZA axis: HOVELS, WIZARD
+
+#### Words with Five Letters
+- A-N axis: ALAPA, ANANA, MUNGO, SANAI
+- C-P axis: MUCKS
+- D-Q axis: CADGE
+- E-R axis: BARIH, EVENE, JEREZ
+- F-S axis: KAFKA
+- G-T axis: MAGMA, ZYGON
+- J-W axis: BOWER, HOWEL
+- L-Y axis: KILOM
+- M-Z axis: FUMET, LUMEN
+
+#### Words with Four Letters
+- A-N axis: AGUA, ANNA, ASIA, GUGU, HEWT, HIST, INNS, ISIS, LISP, MISO, MOMO, OGUM, PAAL, SISI, SUGI, WISE
+- AB-NO axis: BABA, NITO, OXEN, TITI, UMPH, YOND
+- B-O axis: BOOB, CACA, EYEY, KEYS, NOOP, OOOO, ORLO, POON, QUIM, ROOL, SOOK
+- BC-OP axis: ADAD, DADA, JUJU, LOPS, VLSI
+- C-P axis: ACCE, BEAD, KUKU, SWIM, WIWI
+- CD-PQ axis: HORY, HULY, LULU, MIXT, MORT, MULT, SORN, UROL, XXII
+- D-Q axis: CAGE, DECD, GAGA, ODDS, RUMP, SOSO, SUMO, VVLL
+- DE-QR axis: HAHA, POTS, PUNS, SNUP, STOP, TOTO, TUNO, ZUNI
+- E-R axis: ARRI, FEED, JEEZ, POUT, QUOS, TOUP, VEEN, WEEM
+- EF-RS axis: BIBI, SPUR, SUPR
+- F-S axis: DICH, KAKA, ROWT, SICS, SOWS
+- FG-ST axis: BALK, DALI, FLAG, HALE, HIDE, ONYX, RURU
+- G-T axis: LAMB, MAMA, SUSU, YOYO
+- GH-TU axis: ANAN, DANK, HANG, JANE, KAND, NANA, TUTU
+- H-U axis: AGIO, HIGH, KOAE, LOAD
+- HI-UV axis: BLEO, BOBO, CHIN, ENCL, INCH, LOBE, MELD, PAPA, PLEA
+- I-V axis: COCO, JOCH, XYST
+- IJ-VW axis: ADOR, ARAR, CARP, CRAP, DODO, EARN, FARM, GENL, HARK, LENG, NARE, NENE, NODE, ORAD, PARC, RARA
+- J-W axis: ARBS, BOER, GEOM, KIKI, LASH, OKIE, SASA, SIKA
+- JK-WX axis: ALIT, BATS, FILO, ITAL, LATI, MATH, PATE, PILE, PLIE, STAB, TEPA
+- K-X axis: ARDU, BUAT, CAUS, COGS, GOGO, GUAO, QUAE, REQD
+- KL-XY axis: CERT, DINS, DUBS, ERER, FREQ, HERO, HOHO, ISDN, JERM, KERL, KOHL, LINK, NAVI, PING, RAVE, RINE, RUBE, SCTD, SHOD, SIND, TINC, VERA, VINA
+- L-Y axis: DAWT, DOIT, DUCT, ECUS, ELLS, ESES, JAWN, JOIN, MAWK, MUCK, WAWA, YAWY
+- LM-YZ axis: EPIT, FETS, FUDS, JUDO, PIPI, SPIF, TETE, TIPE
+- M-Z axis: GAYS, HUER, KAYO, KOKO, MEUM, MMMM, QUEI, YAYA, YWCA
+- MN-ZA axis: BEVY, GIRT, GRIT, HOLS, IZAR, KLOP, LEVO, POLK, TRIG, VIRE, VOLE, WIRD, WOLD, ZIRA
 
 ## Running the Application
 
@@ -40,3 +169,42 @@ npm run build
 - ClojureScript
 - Reagent (React wrapper)
 - Shadow-CLJS (Build tooling) 
+
+## How It Works
+
+The algorithm works by:
+
+1. Arranging the alphabet in a circle (A through Z)
+2. For each word:
+   - Convert to uppercase and remove non-alphabetic characters
+   - Map each letter to its position on the circle
+   - Check if the pattern formed by connecting consecutive letters has symmetry across any of the 26 possible axes
+   - The 26 axes correspond to either between two letters (A-N, B-O, etc.) or between spaces (AB-NO, BC-OP, etc.)
+
+The symmetry detection uses an elegant mathematical approach where we check if the sum of the ordinal values of paired letters (with A=1, B=2, etc.) across a potential axis of symmetry is constant.
+
+### Types of Symmetry
+
+Wizmetria detects two types of symmetry:
+
+1. **Mirror Symmetry** - When the word creates a pattern that can be mirrored across an axis
+2. **Rotational Symmetry** - When the word creates a pattern that has rotational symmetry around the center
+
+## Original Sources
+
+This web application is based on the original algorithm developed here:
+- Original code: https://repl.it/@Zirteq/Wizmetria
+- Wordlists used for discovery: https://www.gutenberg.org/files/3201/files/SINGLE.TXT
+
+## Contributing
+
+Contributions are welcome! Feel free to:
+- Add more examples of symmetric words
+- Improve the visualization
+- Optimize the algorithm
+- Add more features
+
+To contribute:
+1. Fork the repository
+2. Create your feature branch
+3. Submit a pull request 
