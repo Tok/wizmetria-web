@@ -270,10 +270,10 @@
                     :stroke "#8b5cf6" :stroke-width 2.5}])
           
           ;; Dots at letter positions
-          (for [letter word-letters
+          (for [[idx letter] (map-indexed vector word-letters)
                 :let [pos (get letter-map letter)
                       intersection (line-circle-intersection pos)]
                 :when pos]
-            ^{:key (str "dot-" letter)}
+            ^{:key (str "dot-" letter "-" idx)}
             [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
                      :fill "#a855f7"}])]))]))
