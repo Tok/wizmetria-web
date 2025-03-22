@@ -15,6 +15,20 @@
   [(+ center-x (* radius (Math/cos angle)))
    (+ center-y (* radius (Math/sin angle)))])
 
+;; Calculate intersection point between a line from center to the point
+(defn- line-circle-intersection [point]
+  (let [;; Line from center to the point
+        dx (- (:x point) center-x)
+        dy (- (:y point) center-y)
+        ;; Normalize to get a unit vector
+        length (Math/sqrt (+ (* dx dx) (* dy dy)))
+        unit-dx (/ dx length)
+        unit-dy (/ dy length)
+        ;; Scale to radius to get the intersection point
+        x (+ center-x (* radius unit-dx))
+        y (+ center-y (* radius unit-dy))]
+    {:x x :y y}))
+
 ;; Calculate positions for letters in the circle
 (defn- letter-position [index]
   (let [angle-per-letter (/ (* 2 Math/PI) 26)
@@ -56,11 +70,14 @@
          [:g
           (for [[from-letter to-letter] pairs
                 :let [from-pos (get letter-map from-letter)
-                      to-pos (get letter-map to-letter)]
+                      to-pos (get letter-map to-letter)
+                      ;; Calculate intersections with the circle
+                      from-intersection (line-circle-intersection from-pos)
+                      to-intersection (line-circle-intersection to-pos)]
                 :when (and from-pos to-pos)]
             ^{:key (str from-letter to-letter)}
-            [:line {:x1 (:x from-pos) :y1 (:y from-pos)
-                    :x2 (:x to-pos) :y2 (:y to-pos)
+            [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
+                    :x2 (:x to-intersection) :y2 (:y to-intersection)
                     :stroke "#3b82f6" :stroke-width 2.5}])
           
           ;; Draw small circles at each letter position in the word
@@ -69,7 +86,7 @@
                 :when pos]
             ^{:key (str "dot-" letter)}
             [:circle {:cx (:x pos) :cy (:y pos) :r 4
-                      :fill "#3b82f6"}])]))]))
+                      :fill "#3b82f6"}])])]))
 
 ;; Draw a symmetry axis on the circle
 (defn axis-view [axis-id]
@@ -137,11 +154,14 @@
           ;; Lines between consecutive letters
           (for [[from-letter to-letter] pairs
                 :let [from-pos (get letter-map from-letter)
-                      to-pos (get letter-map to-letter)]
+                      to-pos (get letter-map to-letter)
+                      ;; Calculate intersections with the circle
+                      from-intersection (line-circle-intersection from-pos)
+                      to-intersection (line-circle-intersection to-pos)]
                 :when (and from-pos to-pos)]
             ^{:key (str from-letter to-letter)}
-            [:line {:x1 (:x from-pos) :y1 (:y from-pos)
-                    :x2 (:x to-pos) :y2 (:y to-pos)
+            [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
+                    :x2 (:x to-intersection) :y2 (:y to-intersection)
                     :stroke "#3b82f6" :stroke-width 2.5}])
           
           ;; Circles at letter positions
@@ -150,4 +170,4 @@
                 :when pos]
             ^{:key (str "dot-" letter)}
             [:circle {:cx (:x pos) :cy (:y pos) :r 4
-                      :fill "#3b82f6"}])]))]))
+                      :fill "#3b82f6"}])])])))
