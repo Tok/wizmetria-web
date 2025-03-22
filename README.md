@@ -166,9 +166,41 @@ npm run build
 
 ## Technology Stack
 
-- ClojureScript
-- Reagent (React wrapper)
-- Shadow-CLJS (Build tooling) 
+- ClojureScript - Functional programming language that compiles to JavaScript
+- Reagent - ClojureScript interface to React for building reactive UIs
+- Re-frame - Event-driven functional framework for Reagent applications
+- Shadow-CLJS - ClojureScript build tooling and dependency management
+- Tailwind CSS - Utility-first CSS framework for rapid UI development
+
+## Technical Implementation
+
+### Symmetry Detection Logic
+
+The symmetry detection algorithm uses mathematical properties of alphabetical positions:
+
+1. **Letter Ordinal Values**: Each letter is assigned a numerical value (A=1, B=2, etc.)
+2. **Mirror Symmetry**: For each letter pair across an axis, if the sum of their ordinal values is constant, the word has mirror symmetry
+3. **Rotational Symmetry**: For each letter, if there's a corresponding letter at position (ordinal + 13) % 26, the word has rotational symmetry
+4. **Axis Calculation**: The algorithm determines which of the 26 possible axes (A-N through MN-ZA) the symmetry occurs on
+
+### Async Processing for Large Files
+
+The text analysis feature implements an asynchronous processing pipeline:
+
+1. Files are read in chunks to prevent UI freezing
+2. Text processing is divided into multiple steps with progress indicators
+3. Each step is processed with small timeouts to keep the UI responsive
+4. Results are calculated and displayed incrementally
+
+### Interactive Visualization
+
+The word visualization component:
+
+1. Renders the alphabet in a circular layout
+2. Maps letters of input words to their positions
+3. Draws connections between consecutive letters
+4. Highlights symmetry axes and letter pairings
+5. Uses SVG for crisp, responsive graphics
 
 ## How It Works
 
@@ -190,11 +222,17 @@ Wizmetria detects two types of symmetry:
 1. **Mirror Symmetry** - When the word creates a pattern that can be mirrored across an axis
 2. **Rotational Symmetry** - When the word creates a pattern that has rotational symmetry around the center
 
+## Vibe Coded By
+
+This application was "vibe coded" by Claude 3.7 Sonnet, an AI assistant from Anthropic. The concept of "vibe coding" involves creating code that not only functions correctly but also has a cohesive aesthetic and user experience "vibe" - in this case, a mystical, symmetry-focused exploration of language patterns.
+
 ## Original Sources
 
 This web application is based on the original algorithm developed here:
 - Original code: https://repl.it/@Zirteq/Wizmetria
-- Wordlists used for discovery: https://www.gutenberg.org/files/3201/files/SINGLE.TXT
+- Wordlists used for discovery: 
+   - https://www.gutenberg.org/files/3201/files/SINGLE.TXT
+   - https://github.com/first20hours/google-10000-english
 
 ## Contributing
 
