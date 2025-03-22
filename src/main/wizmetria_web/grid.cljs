@@ -100,9 +100,15 @@
   (let [positions (letter-positions)
         letter-map (into {} (map (fn [pos] [(:letter pos) pos]) positions))
         cleaned-word (util/clean word)
-        angle (* (/ Math/PI 13) (/ axis-id 2))
-        [x1 y1] (polar->cartesian angle radius)
-        [x2 y2] (polar->cartesian (+ angle Math/PI) radius)]
+        ;; Adjust axis angle to match the circle rotation (Z-A at top)
+        angle-per-letter (/ (* 2 Math/PI) 26)
+        half-angle (/ angle-per-letter 2)
+        ;; The original calculation was (* (/ Math/PI 13) (/ axis-id 2))
+        ;; We need to rotate by PI/2 + half-angle to match our circle rotation
+        axis-base-angle (* (/ Math/PI 13) (/ axis-id 2))
+        axis-angle (+ axis-base-angle (/ Math/PI 2) half-angle)
+        [x1 y1] (polar->cartesian axis-angle radius)
+        [x2 y2] (polar->cartesian (+ axis-angle Math/PI) radius)]
     
     [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
      ;; Draw outer circle
