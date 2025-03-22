@@ -201,6 +201,45 @@
                 radial-gradient(circle at 50% 0%, rgba(91, 33, 182, 0.15), transparent 70%),
                 radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.1), transparent 50%);
         }
+        
+        /* GitHub link magical styling */
+        .shiny-enabled .github-link {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .shiny-enabled .github-link:hover {
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.8);
+            transform: translateY(-1px);
+        }
+        
+        .shiny-enabled .github-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #a855f7, transparent);
+            transform: scaleX(0);
+            transform-origin: center;
+            transition: transform 0.3s ease;
+            opacity: 0.7;
+        }
+        
+        .shiny-enabled .github-link:hover::after {
+            transform: scaleX(1);
+        }
+        
+        .shiny-enabled .github-link svg {
+            transition: transform 0.3s ease;
+        }
+        
+        .shiny-enabled .github-link:hover svg {
+            transform: rotate(15deg) scale(1.2);
+            filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.7));
+        }
     </style>
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans">
