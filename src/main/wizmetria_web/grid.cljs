@@ -52,15 +52,23 @@
         letter-map (into {} (map (fn [pos] [(:letter pos) pos]) positions))
         cleaned-word (util/clean word)]
     
-    [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
+    [:svg {:width 360 :height 360 :viewBox "0 0 360 360"
+           :role "img"
+           :aria-labelledby "circle-title circle-desc"}
+     [:title {:id "circle-title"} "Letter Circle Visualization"]
+     [:desc {:id "circle-desc"} 
+      (str "A circular visualization showing the 26 letters of the alphabet arranged in a circle"
+           (when (seq cleaned-word) (str " with the word '" cleaned-word "' highlighted")))]
+     
      ;; Draw outer circle
      [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#6b7280" :stroke-width 1}]
+               :fill "none" :stroke "#6b7280" :stroke-width 1
+               :aria-hidden "true"}]
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]
        ^{:key (str "letter-" letter)}
-       [:g
+       [:g {:aria-label (str "Letter " letter)}
         [:text {:x x :y y 
                 :text-anchor "middle" 
                 :dominant-baseline "middle"
@@ -71,8 +79,8 @@
      ;; Draw lines between consecutive letters in the word
      (when (seq cleaned-word)
        (let [word-letters (seq cleaned-word)
-             pairs (map-indexed vector (map vector word-letters (rest word-letters)))]
-         [:g
+             pairs (map-indexed (fn [idx [a b]] [a b idx]) (map vector word-letters (rest word-letters)))]
+         [:g {:aria-label (str "Connections for word " cleaned-word)}
           ;; Lines between consecutive letters
           (for [[idx [from-letter to-letter]] pairs
                 :let [from-pos (get letter-map from-letter)
@@ -84,7 +92,9 @@
             ^{:key (str "line-" from-letter to-letter "-" idx)}
             [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
                     :x2 (:x to-intersection) :y2 (:y to-intersection)
-                    :stroke "#8b5cf6" :stroke-width 2.5}])
+                    :stroke "#8b5cf6" :stroke-width 2.5
+                    :aria-label (str "Connection from " from-letter " to " to-letter)
+                    :aria-hidden "true"}])
           
           ;; Circles at letter positions
           (for [[idx letter] (map-indexed vector word-letters)
@@ -94,26 +104,37 @@
                 :when pos]
             ^{:key (str "dot-" letter "-" idx)}
             [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
-                      :fill "#a855f7"}])]))]))
+                      :fill "#a855f7"
+                      :aria-label (str "Letter " letter " position marker")
+                      :aria-hidden "true"}])]))]))
 
 ;; Draw a symmetry axis on the circle
 (defn axis-view [axis-id]
   (let [angle (* (/ Math/PI 13) (/ axis-id 2))
         [x1 y1] (polar->cartesian angle radius)
         [x2 y2] (polar->cartesian (+ angle Math/PI) radius)]
-    [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
+    [:svg {:width 360 :height 360 :viewBox "0 0 360 360"
+           :role "img"
+           :aria-labelledby "axis-title axis-desc"}
+     [:title {:id "axis-title"} "Symmetry Axis Visualization"]
+     [:desc {:id "axis-desc"} 
+      (str "Visualization showing symmetry axis " axis-id " across the alphabet circle")]
+     
      ;; Draw outer circle
      [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#6b7280" :stroke-width 1}]
+               :fill "none" :stroke "#6b7280" :stroke-width 1
+               :aria-hidden "true"}]
      
      ;; Draw symmetry axis
      [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
-             :stroke "#c026d3" :stroke-width 2 :stroke-dasharray "5,5"}]
+             :stroke "#c026d3" :stroke-width 2 :stroke-dasharray "5,5"
+             :aria-label (str "Symmetry axis " axis-id)
+             :aria-hidden "true"}]
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} (letter-positions)]
-       ^{:key letter}
-       [:g
+       ^{:key (str "alphabet-" letter)}
+       [:g {:aria-label (str "Letter " letter)}
         [:text {:x x :y y 
                 :text-anchor "middle" 
                 :dominant-baseline "middle"
@@ -159,17 +180,35 @@
                         (filter (fn [[c1 c2 i j]] 
                                   ;; Filter out adjacent letters that are just part of the word sequence
                                   (not= (Math/abs (- i j)) 1))
-                                pairs)))]
+                                pairs)))
+        symmetry-type (cond 
+                        (not has-symmetry) "no"
+                        is-rotation-axis "rotation"
+                        :else "mirror")]
     
-    [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
+    [:svg {:width 360 :height 360 :viewBox "0 0 360 360"
+           :role "img" 
+           :aria-labelledby "symmetry-title symmetry-desc"
+           :tabIndex "0"}
+     [:title {:id "symmetry-title"} 
+      (str "Symmetry visualization for " cleaned-word)]
+     [:desc {:id "symmetry-desc"} 
+      (str "A visualization showing the word '" cleaned-word "' with " 
+           symmetry-type " symmetry" 
+           (when has-symmetry (str " along axis " axis-id))
+           ". Letters are arranged in a circle with connections between consecutive letters."
+           (when (and has-symmetry (not is-rotation-axis)) " Mirror pairs are connected with dashed purple lines.")
+           (when (and has-symmetry is-rotation-axis) " Rotation pairs are connected with dashed pink lines."))]
+     
      ;; Draw outer circle
      [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#6b7280" :stroke-width 1}]
+               :fill "none" :stroke "#6b7280" :stroke-width 1
+               :aria-hidden "true"}]
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]
        ^{:key (str "alphabet-" letter)}
-       [:g
+       [:g {:aria-label (str "Letter " letter)}
         [:text {:x x :y y 
                 :text-anchor "middle" 
                 :dominant-baseline "middle"
@@ -181,10 +220,10 @@
      (when (seq cleaned-word)
        (let [word-letters (seq cleaned-word)
              pairs (map-indexed (fn [idx [a b]] [a b idx]) (map vector word-letters (rest word-letters)))]
-         [:g
+         [:g {:aria-label (str "Word connections for " cleaned-word)}
           ;; Draw mirror pair connections (if applicable)
           (when (and (not is-rotation-axis) has-symmetry (seq mirror-pairs))
-            [:g 
+            [:g {:aria-label "Mirror symmetry connections"}
              (for [[c1 c2 i j] mirror-pairs
                    :let [pos1 (get letter-map c1)
                          pos2 (get letter-map c2)
@@ -192,7 +231,8 @@
                          intersection2 (line-circle-intersection pos2)]
                    :when (and pos1 pos2)]
                ^{:key (str "mirror-" c1 c2 "-" i "-" j)}
-               [:g
+               [:g {:aria-label (str "Mirror pair " c1 " and " c2)
+                   :aria-hidden "true"}
                 ;; Thin background line
                 [:line {:x1 (:x intersection1) :y1 (:y intersection1)
                         :x2 (:x intersection2) :y2 (:y intersection2)
@@ -211,7 +251,7 @@
           
           ;; Draw rotation pair connections (if applicable)
           (when (and is-rotation-axis has-symmetry)
-            [:g 
+            [:g {:aria-label "Rotation symmetry connections"}
              (for [[idx [c1 c2]] (map-indexed vector rotation-pairs)
                    :let [pos1 (get letter-map c1)
                          pos2 (get letter-map c2)
@@ -219,7 +259,8 @@
                          intersection2 (line-circle-intersection pos2)]
                    :when (and pos1 pos2)]
                ^{:key (str "rotation-" c1 c2 "-" idx)}
-               [:g
+               [:g {:aria-label (str "Rotation pair " c1 " and " c2)
+                   :aria-hidden "true"}
                 ;; Thinner background line
                 [:line {:x1 (:x intersection1) :y1 (:y intersection1)
                         :x2 (:x intersection2) :y2 (:y intersection2)
@@ -238,7 +279,8 @@
           
           ;; Draw symmetry axis
           (when has-symmetry
-            [:g
+            [:g {:aria-label (str (if is-rotation-axis "Rotation" "Mirror") " symmetry axis " axis-id)
+                :aria-hidden "true"}
              ;; Thinner semi-transparent background
              [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
                      :stroke (if is-rotation-axis "#f472b6" "#c026d3") 
@@ -265,7 +307,9 @@
             ^{:key (str "line-" from-letter to-letter "-" idx)}
             [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
                     :x2 (:x to-intersection) :y2 (:y to-intersection)
-                    :stroke "#8b5cf6" :stroke-width 2.5}])
+                    :stroke "#8b5cf6" :stroke-width 2.5
+                    :aria-label (str "Connection from " from-letter " to " to-letter)
+                    :aria-hidden "true"}])
           
           ;; Dots at letter positions
           (for [[idx letter] (map-indexed vector word-letters)
@@ -274,4 +318,6 @@
                 :when pos]
             ^{:key (str "dot-" letter "-" idx)}
             [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
-                     :fill "#a855f7"}])]))]))
+                     :fill "#a855f7"
+                     :aria-label (str "Marker for letter " letter)
+                     :aria-hidden "true"}])]))]))
