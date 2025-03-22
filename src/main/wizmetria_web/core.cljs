@@ -200,15 +200,15 @@
 ;; -- Views --
 (defn input-field []
   (let [word @(rf/subscribe [:word])]
-    [:div.flex.flex-col.items-center.mb-8
-     [:label.text-xl.mb-2.text-purple-200 "Enter a word:"]
+    [:div.flex.flex-col.items-center.mb-4
+     [:label.text-lg.mb-1.text-purple-200 "Enter a word:"]
      [:div.flex.w-full.max-w-md.shadow-lg
-      [:input.w-full.px-4.py-3.bg-gray-800.border-2.border-purple-700.rounded-l-lg.focus:outline-none.focus:ring-2.focus:ring-indigo-500.text-gray-100.placeholder-gray-500
+      [:input.w-full.px-4.py-2.bg-gray-800.border-2.border-purple-700.rounded-l-lg.focus:outline-none.focus:ring-2.focus:ring-indigo-500.text-gray-100.placeholder-gray-500
        {:type "text"
         :value word
         :placeholder "e.g. WIZARD"
         :on-change #(rf/dispatch [:update-word (-> % .-target .-value)])}]
-      [:button.bg-purple-700.text-white.px-6.py-3.rounded-r-lg.hover:bg-purple-600.focus:outline-none.focus:ring-2.focus:ring-purple-500.transition-colors.duration-200.font-medium
+      [:button.bg-purple-700.text-white.px-5.py-2.rounded-r-lg.hover:bg-purple-600.focus:outline-none.focus:ring-2.focus:ring-purple-500.transition-colors.duration-200.font-medium
        {:on-click #(rf/dispatch [:check-symmetry])}
        "Check"]]]))
 
@@ -251,13 +251,13 @@
                                  (sym/rotation-symmetric-word? cleaned-word))]
     [:div
      (when (and results (seq results))
-       [:div.mt-8.w-full.flex.flex-col.items-center
-        [:h2.text-2xl.mb-6.text-center.text-purple-300.font-semibold "Symmetry Results"]
+       [:div.mt-4.w-full.flex.flex-col.items-center
+        [:h2.text-xl.mb-3.text-center.text-purple-300.font-semibold "Symmetry Results"]
         [check-word]
-        [:div.flex.flex-wrap.justify-center.gap-8.w-full.mt-6
+        [:div.flex.flex-wrap.justify-center.gap-6.w-full.mt-4
          ;; Show a single visualization with correct symmetry information
-         [:div.bg-gray-800.p-5.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700.transform.transition-all.duration-300.hover:scale-105
-          [:h3.text-xl.mb-3.text-center.text-indigo-300.font-medium 
+         [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700.transform.transition-all.duration-300.hover:scale-105
+          [:h3.text-lg.mb-2.text-center.text-indigo-300.font-medium 
            (cond
              has-mirror-symmetry "Mirror Symmetry"
              has-rotation-symmetry "Rotation Symmetry"
@@ -271,40 +271,46 @@
             (or has-mirror-symmetry has-rotation-symmetry)]]]]])]))
 
 (defn explanation []
-  [:div.bg-gray-800.p-6.rounded-lg.shadow-lg.mb-8.border.border-purple-700.text-gray-200
-   [:h2.text-2xl.mb-4.text-purple-300.font-semibold "About Wizmetria"]
-   [:p.mb-4 "Wizmetria detects alphabetical circular symmetry in words. It arranges the alphabet in a circle and checks if a word has symmetry when its letters are connected in sequence."]
-   [:p.mb-4 "There are 13 possible axes of symmetry. An axis always goes through the center of the circle, but can be between two letters (A-N) or between the space of two letters (AB-NO)."]
+  [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.mb-4.border.border-purple-700.text-gray-200
+   [:h2.text-xl.mb-2.text-purple-300.font-semibold "About Wizmetria"]
+   [:p.mb-2.text-sm "Wizmetria detects alphabetical circular symmetry in words by arranging the alphabet in a circle and checking if a word has symmetry when its letters are connected in sequence. There are 13 possible axes of symmetry, either between two letters (A-N) or between the space of two letters (AB-NO)."]
    
-   [:div.mb-4
-    [:p.mb-2 [:span.text-indigo-300.font-medium "Mirror symmetry"] " examples:"]
-    [:p 
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "WIZARD"])} "WIZARD"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "JAGUAR"])} "JAGUAR"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "METAPH"])} "METAPH"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "UNSEWING"])} "UNSEWING"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "VOTING"])} "VOTING"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "BATHMATS"])} "BATHMATS"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "TICKET"])} "TICKET"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "NETFUL"])} "NETFUL"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "FLUENT"])} "FLUENT"] ", "
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "CROTCHET"])} "CROTCHET"]]
+   [:div.flex.flex-col.md:flex-row.gap-4.text-sm
+    [:div.flex-1
+     [:p.mb-1 [:span.text-indigo-300.font-medium "Mirror symmetry"] " examples:"]
+     [:p 
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "WIZARD"])} "WIZARD"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "JAGUAR"])} "JAGUAR"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "METAPH"])} "METAPH"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "UNSEWING"])} "UNSEWING"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "VOTING"])} "VOTING"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "BATHMATS"])} "BATHMATS"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "TICKET"])} "TICKET"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "NETFUL"])} "NETFUL"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "FLUENT"])} "FLUENT"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "CROTCHET"])} "CROTCHET"]]]
     
-    [:p.mt-3.mb-2 [:span.text-indigo-300.font-medium "Rotational symmetry"] " example:"]
-    [:p 
-     [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(rf/dispatch [:update-word "HYRULE"])} 
-      "HYRULE"]]]])
+    [:div.flex-1
+     [:p.mb-1 [:span.text-indigo-300.font-medium "Rotational symmetry"] " examples:"]
+     [:p 
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "HYRULE"])} "HYRULE"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "NEAR"])} "NEAR"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "NEARLY"])} "NEARLY"] ", "
+      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
+       {:on-click #(rf/dispatch [:update-word "REFERS"])} "REFERS"]]]]])
 
 ;; -- File analysis component --
 (defn text-analysis []
@@ -393,58 +399,58 @@
 (defn wordlist-stats []
   (let [stats @(rf/subscribe [:wordlist-stats])]
     (when stats
-      [:div.bg-gray-800.p-6.rounded-lg.shadow-lg.mb-8.border.border-purple-700.text-gray-200
-       [:h2.text-2xl.mb-4.text-purple-300.font-semibold "Word List Analysis"]
+      [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.mb-4.border.border-purple-700.text-gray-200
+       [:h2.text-xl.mb-3.text-purple-300.font-semibold "Word List Analysis"]
        
-       [:div.grid.grid-cols-1.md:grid-cols-3.gap-4.mb-6
-        [:div.bg-gray-700.rounded-lg.p-4.flex.flex-col.items-center.justify-center
-         [:span.text-3xl.font-bold.text-indigo-300 (:total-words stats)]
-         [:span.text-sm.text-gray-300 "Total Unique Words"]]
+       [:div.grid.grid-cols-1.md:grid-cols-3.gap-3.mb-4
+        [:div.bg-gray-700.rounded-lg.p-3.flex.flex-col.items-center.justify-center
+         [:span.text-2xl.font-bold.text-indigo-300 (:total-words stats)]
+         [:span.text-xs.text-gray-300 "Total Unique Words"]]
         
-        [:div.bg-gray-700.rounded-lg.p-4.flex.flex-col.items-center.justify-center
-         [:span.text-3xl.font-bold.text-indigo-300 (get-in stats [:mirror :count])]
-         [:span.text-sm.text-gray-300 "Mirror Symmetry Words"]]
+        [:div.bg-gray-700.rounded-lg.p-3.flex.flex-col.items-center.justify-center
+         [:span.text-2xl.font-bold.text-indigo-300 (get-in stats [:mirror :count])]
+         [:span.text-xs.text-gray-300 "Mirror Symmetry Words"]]
         
-        [:div.bg-gray-700.rounded-lg.p-4.flex.flex-col.items-center.justify-center
-         [:span.text-3xl.font-bold.text-indigo-300 (get-in stats [:rotation :count])]
-         [:span.text-sm.text-gray-300 "Rotational Symmetry Words"]]]
+        [:div.bg-gray-700.rounded-lg.p-3.flex.flex-col.items-center.justify-center
+         [:span.text-2xl.font-bold.text-indigo-300 (get-in stats [:rotation :count])]
+         [:span.text-xs.text-gray-300 "Rotational Symmetry Words"]]]
        
        ;; Top 10 longest mirror symmetry words
-       [:div.mb-6
-        [:h3.text-xl.mb-3.text-indigo-300.font-medium "Top 10 Longest Mirror Symmetry Words"]
+       [:div.mb-4
+        [:h3.text-lg.mb-2.text-indigo-300.font-medium "Top 10 Longest Mirror Symmetry Words"]
         [:div.flex.flex-wrap.gap-2
          (for [word (get-in stats [:mirror :top-10])]
            ^{:key word}
-           [:span.bg-gray-700.px-3.py-1.rounded-md.cursor-pointer.hover:bg-gray-600.transition-colors.text-indigo-200
+           [:span.bg-gray-700.px-3.py-1.rounded-md.cursor-pointer.hover:bg-gray-600.transition-colors.text-indigo-200.text-sm
             {:on-click #(rf/dispatch [:update-word word])}
             word])]]
        
        ;; Top 10 longest rotational symmetry words
-       [:div.mb-6
-        [:h3.text-xl.mb-3.text-indigo-300.font-medium "Top 10 Longest Rotational Symmetry Words"]
+       [:div.mb-4
+        [:h3.text-lg.mb-2.text-indigo-300.font-medium "Top 10 Longest Rotational Symmetry Words"]
         [:div.flex.flex-wrap.gap-2
          (for [word (get-in stats [:rotation :top-10])]
            ^{:key word}
-           [:span.bg-gray-700.px-3.py-1.rounded-md.cursor-pointer.hover:bg-gray-600.transition-colors.text-indigo-200
+           [:span.bg-gray-700.px-3.py-1.rounded-md.cursor-pointer.hover:bg-gray-600.transition-colors.text-indigo-200.text-sm
             {:on-click #(rf/dispatch [:update-word word])}
             word])]]
        
        ;; Mirror symmetry by axis
        [:div
-        [:h3.text-xl.mb-3.text-indigo-300.font-medium "Words by Symmetry Axis"]
-        [:div.grid.grid-cols-1.md:grid-cols-2.gap-4
+        [:h3.text-lg.mb-2.text-indigo-300.font-medium "Words by Symmetry Axis"]
+        [:div.grid.grid-cols-1.md:grid-cols-2.gap-3
          (for [[axis-id words] (get-in stats [:mirror :by-axis])
                :when (seq words)
                :let [axis-name (sym/id->axis-name axis-id)
                      top-words (take 5 words)]]
            ^{:key axis-id}
-           [:div.bg-gray-700.rounded-lg.p-4
-            [:h4.text-indigo-200.font-medium.mb-2 
+           [:div.bg-gray-700.rounded-lg.p-3
+            [:h4.text-indigo-200.font-medium.mb-1.text-sm
              (str axis-name " axis (" (count words) " words)")]
             [:div.flex.flex-wrap.gap-1
              (for [word top-words]
                ^{:key word}
-               [:span.bg-gray-600.px-2.py-1.rounded-md.text-sm.cursor-pointer.hover:bg-gray-500.transition-colors.text-indigo-100
+               [:span.bg-gray-600.px-2.py-0.5.rounded-md.text-xs.cursor-pointer.hover:bg-gray-500.transition-colors.text-indigo-100
                 {:on-click #(rf/dispatch [:update-word word])}
                 word])]])]]])))
 
