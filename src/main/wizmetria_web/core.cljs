@@ -56,9 +56,10 @@
   (let [word @(rf/subscribe [:word])
         cleaned-word (util/clean word)
         axis-id (when (seq cleaned-word) (sym/axis-id-for-word cleaned-word))
-        has-mirror-symmetry (some? axis-id)
-        has-rotation-symmetry (and (not has-mirror-symmetry)
-                                  (seq cleaned-word)
+        rotation-axis-id (when (seq cleaned-word) (sym/rotation-symmetry-axis-id-for-word cleaned-word))
+        has-mirror-symmetry (and (seq cleaned-word) (sym/symmetric-word? cleaned-word))
+        has-rotation-symmetry (and (seq cleaned-word)
+                                  (not has-mirror-symmetry)
                                   (sym/rotation-symmetric-word? cleaned-word))]
     [:div.mt-4.text-center
      (if (empty? cleaned-word)
@@ -72,7 +73,7 @@
          has-rotation-symmetry
          [:p.text-green-400 
           (str "\"" cleaned-word "\" has rotational symmetry around axis " 
-               (sym/id->axis-name (sym/rotation-symmetry-axis-id)))]
+               (when rotation-axis-id (sym/id->axis-name rotation-axis-id)))]
          
          :else
          [:p.text-red-400 
@@ -83,11 +84,11 @@
         word @(rf/subscribe [:word])
         cleaned-word (util/clean word)
         word-axis-id (when (not-empty cleaned-word) (sym/axis-id-for-word cleaned-word))
+        rotation-axis-id (when (not-empty cleaned-word) (sym/rotation-symmetry-axis-id-for-word cleaned-word))
         has-mirror-symmetry (some? word-axis-id)
         has-rotation-symmetry (and (not has-mirror-symmetry)
                                  (seq cleaned-word)
-                                 (sym/rotation-symmetric-word? cleaned-word))
-        rotation-axis-id (sym/rotation-symmetry-axis-id)]
+                                 (sym/rotation-symmetric-word? cleaned-word))]
     [:div
      (when (and results (seq results))
        [:div.mt-8.w-full.flex.flex-col.items-center

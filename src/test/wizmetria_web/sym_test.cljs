@@ -84,3 +84,22 @@
 (deftest hyrule-test
   (testing "HYRULE has rotation symmetry"
     (is (sym/rotation-symmetric-word? "HYRULE")))) 
+
+(deftest mirror-axis-test
+  (testing "mirror axis names"
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "A")) "A-N"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "B")) "B-O"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "C")) "C-P"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "AB")) "AB-NO"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "BC")) "BC-OP"))    
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "CD")) "CD-PQ"))    
+    ))
+
+(deftest wizard-mirror-axis-test
+  (testing "WIZARD has mirror symmetry MN-ZA"
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "WIZARD")) "MN-ZA")))) 
+
+(deftest hyrule-rotation-axis-test
+  (testing "HYRULE has rotation symmetry FG-ST"
+    (is (= (sym/id->axis-name (sym/rotation-symmetry-axis-id-for-word "HYRULE")) "FG-ST")))) 
+
