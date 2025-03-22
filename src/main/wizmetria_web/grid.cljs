@@ -51,7 +51,7 @@
     [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
      ;; Draw outer circle
      [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#ccc" :stroke-width 1}]
+               :fill "none" :stroke "#6b7280" :stroke-width 1}]
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]
@@ -61,7 +61,8 @@
                 :text-anchor "middle" 
                 :dominant-baseline "middle"
                 :font-size 16
-                :font-weight "bold"} letter]])
+                :font-weight "bold"
+                :fill "#d1d5db"} letter]])
      
      ;; Draw lines between consecutive letters in the word
      (when (seq cleaned-word)
@@ -79,7 +80,7 @@
             ^{:key (str from-letter to-letter)}
             [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
                     :x2 (:x to-intersection) :y2 (:y to-intersection)
-                    :stroke "#3b82f6" :stroke-width 2.5}])
+                    :stroke "#8b5cf6" :stroke-width 2.5}])
           
           ;; Draw small circles at each letter position in the word
           (for [letter word-letters
@@ -89,7 +90,7 @@
                 :when pos]
             ^{:key (str "dot-" letter)}
             [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
-                      :fill "#3b82f6"}])]))]))
+                      :fill "#a855f7"}])]))]))
 
 ;; Draw a symmetry axis on the circle
 (defn axis-view [axis-id]
@@ -99,11 +100,11 @@
     [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
      ;; Draw outer circle
      [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#ccc" :stroke-width 1}]
+               :fill "none" :stroke "#6b7280" :stroke-width 1}]
      
      ;; Draw symmetry axis
      [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
-             :stroke "#f59e0b" :stroke-width 2 :stroke-dasharray "5,5"}]
+             :stroke "#c026d3" :stroke-width 2 :stroke-dasharray "5,5"}]
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} (letter-positions)]
@@ -113,7 +114,8 @@
                 :text-anchor "middle" 
                 :dominant-baseline "middle"
                 :font-size 16
-                :font-weight "bold"} letter]])]))
+                :font-weight "bold"
+                :fill "#d1d5db"} letter]])]))
 
 ;; Combined view showing both the word connections and its symmetry axis
 (defn symmetry-view [word axis-id]
@@ -133,11 +135,11 @@
     [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
      ;; Draw outer circle
      [:circle {:cx center-x :cy center-y :r radius 
-               :fill "none" :stroke "#ccc" :stroke-width 1}]
+               :fill "none" :stroke "#6b7280" :stroke-width 1}]
      
      ;; Draw symmetry axis
      [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
-             :stroke "#f59e0b" :stroke-width 2 :stroke-dasharray "5,5"}]
+             :stroke "#c026d3" :stroke-width 2 :stroke-dasharray "5,5"}]
      
      ;; Draw letters around the circle
      (for [{:keys [x y letter]} positions]
@@ -147,7 +149,8 @@
                 :text-anchor "middle" 
                 :dominant-baseline "middle"
                 :font-size 16
-                :font-weight "bold"} letter]])
+                :font-weight "bold"
+                :fill "#d1d5db"} letter]])
      
      ;; Draw lines between consecutive letters in the word
      (when (seq cleaned-word)
@@ -165,7 +168,7 @@
             ^{:key (str from-letter to-letter)}
             [:line {:x1 (:x from-intersection) :y1 (:y from-intersection)
                     :x2 (:x to-intersection) :y2 (:y to-intersection)
-                    :stroke "#3b82f6" :stroke-width 2.5}])
+                    :stroke "#8b5cf6" :stroke-width 2.5}])
           
           ;; Circles at letter positions
           (for [letter word-letters
@@ -175,4 +178,4 @@
                 :when pos]
             ^{:key (str "dot-" letter)}
             [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
-                      :fill "#3b82f6"}])]))]))
+                      :fill "#a855f7"}])]))]))
