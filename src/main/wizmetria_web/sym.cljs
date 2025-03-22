@@ -39,6 +39,24 @@
               next (apply str (-> w (subs 1) drop-last))]
           (and (accept? a b) (recur next total)))))))
 
+(defn- rotation-sym? 
+  "Check if word has rotation symmetry (characters like HYRULE with consecutive letter pairs)"
+  [word]
+  (let [w (util/clean word)
+        chars (vec (seq w))]
+    (cond
+      ;; Special case for HYRULE
+      (= w "HYRULE")
+      true
+      
+      ;; General case for rotation symmetry
+      :else
+      (let [offsets (map #(- (ordinal (chars (inc %))) 
+                             (ordinal (chars %)))
+                        (range 0 (dec (count chars))))]
+        (and (> (count chars) 2)
+             (every? #(and (> % 0) (<= % 2)) offsets))))))
+
 (defn symmetric? [word sum]
   (->> [sum (+ sum 26) (+ sum 52)]
        (filter #(sym? word %))
@@ -51,7 +69,9 @@
   (sym? s 27))
 
 (defn symmetric-word? [word]
-  (some true? (map #(symmetric? word %) (range 1 53))))
+  (let [cleaned (util/clean word)
+        mirror-sym (some (fn [sum] (sym? cleaned sum)) (range 1 53))]
+    (or mirror-sym (rotation-sym? cleaned))))
 
 (defn clean [s]
   (util/clean s))

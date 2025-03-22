@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "shadow-cljs watch app",
-    "build": "shadow-cljs release app"
+    "build": "shadow-cljs release app",
+    "test": "shadow-cljs compile test"
   },
   "dependencies": {
     "react": "^18.2.0",

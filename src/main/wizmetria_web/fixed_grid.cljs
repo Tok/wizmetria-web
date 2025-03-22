@@ -140,4 +140,4 @@
                 :when pos]
             ^{:key (str "dot-" letter)}
             [:circle {:cx (:x pos) :cy (:y pos) :r 4
-                      :fill "#3b82f6"}])]))]))) 
+                      :fill "#3b82f6"}])]))]))
