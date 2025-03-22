@@ -1,5 +1,6 @@
 (ns wizmetria-web.core
   (:require [reagent.dom :as rdom]
+            [reagent.dom.client :as rdomc]
             [reagent.core :as r]
             [re-frame.core :as rf]
             [wizmetria-web.sym :as sym]
@@ -140,7 +141,8 @@
 
 (defn mount-root []
   (rf/dispatch-sync [:initialize])
-  (rdom/render [main-panel] (.getElementById js/document "app")))
+  (let [root (rdomc/create-root (.getElementById js/document "app"))]
+    (rdomc/render root [main-panel])))
 
 (defn init []
   (mount-root)) 
