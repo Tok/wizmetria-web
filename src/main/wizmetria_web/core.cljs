@@ -55,14 +55,14 @@
   (let [results @(rf/subscribe [:symmetry-results])
         word @(rf/subscribe [:word])]
     (when (and results (seq results))
-      [:div.mt-8
-       [:h2.text-2xl.mb-4 "Symmetry Results"]
-       [:div.grid.grid-cols-1.md:grid-cols-2.gap-8
+      [:div.mt-8.w-full.flex.flex-col.items-center
+       [:h2.text-2xl.mb-4.text-center "Symmetry Results"]
+       [:div.flex.flex-wrap.justify-center.gap-8.w-full
         (for [[axis-id symmetric-words] results
               :when (seq symmetric-words)]
           ^{:key axis-id}
-          [:div.bg-white.p-4.rounded-lg.shadow
-           [:h3.text-xl.mb-2 (str "Axis: " (sym/id->axis-name axis-id))]
+          [:div.bg-white.p-4.rounded-lg.shadow.flex.flex-col.items-center.w-80
+           [:h3.text-xl.mb-2.text-center (str "Axis: " (sym/id->axis-name axis-id))]
            [:div.alphabet-circle.flex.items-center.justify-center
             [grid/symmetry-view word axis-id]]])]])))
 
@@ -74,12 +74,13 @@
    [:p "Famous examples with symmetry include WIZARD, JAGUAR, and METAPH."]])
 
 (defn main-panel []
-  [:div.container.mx-auto.px-4.py-8
+  [:div.container.mx-auto.px-4.py-8.flex.flex-col.items-center
    [:h1.text-4xl.text-center.mb-8 "Wizmetria"]
    [:h2.text-2xl.text-center.mb-8 "Alphabetical Circular Symmetry Detection"]
-   [explanation]
-   [input-field]
-   [symmetry-display]])
+   [:div.w-full.max-w-5xl
+    [explanation]
+    [input-field]
+    [symmetry-display]]])
 
 (defn mount-root []
   (rf/dispatch-sync [:initialize])
