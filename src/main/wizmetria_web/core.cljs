@@ -5,7 +5,8 @@
             [re-frame.core :as rf]
             [wizmetria-web.sym :as sym]
             [wizmetria-web.grid :as grid]
-            [wizmetria-web.util :as util]))
+            [wizmetria-web.util :as util]
+            [clojure.string :as str]))
 
 ;; -- Subscriptions --
 (rf/reg-sub
@@ -18,12 +19,24 @@
  (fn [db]
    (:symmetry-results db)))
 
+(rf/reg-sub
+ :wordlist-stats
+ (fn [db]
+   (:wordlist-stats db)))
+
+(rf/reg-sub
+ :processing-state
+ (fn [db]
+   (:processing-state db)))
+
 ;; -- Events --
 (rf/reg-event-db
  :initialize
  (fn [_ _]
    {:word "WIZARD"
-    :symmetry-results (sym/evaluate [(sym/clean "WIZARD")])}))
+    :symmetry-results (sym/evaluate [(sym/clean "WIZARD")])
+    :wordlist-stats nil
+    :processing-state nil}))
 
 (rf/reg-event-db
  :update-word
@@ -37,6 +50,152 @@
          results (when (not-empty word)
                    (sym/evaluate [(sym/clean word)]))]
      (assoc db :symmetry-results results))))
+
+(rf/reg-event-fx
+ :process-file
+ (fn [{:keys [db]} [_ file]]
+   {:db (assoc db :processing-state {:status :reading 
+                                     :file-name (.-name file)
+                                     :progress 0})
+    :fx [[:read-file-async file]]}))
+
+(rf/reg-fx
+ :read-file-async
+ (fn [file]
+   (let [reader (js/FileReader.)]
+     (set! (.-onload reader)
+           (fn [e]
+             (let [content (.. e -target -result)]
+               (rf/dispatch [:prepare-text-processing content]))))
+     (set! (.-onprogress reader)
+           (fn [e]
+             (when (.-lengthComputable e)
+               (let [progress (/ (.-loaded e) (.-total e))]
+                 (rf/dispatch [:update-processing-progress
+                              {:status :reading
+                               :progress (* 100 progress)}])))))
+     (.readAsText reader file))))
+
+(rf/reg-event-db
+ :update-processing-progress
+ (fn [db [_ state]]
+   (update db :processing-state merge state)))
+
+(rf/reg-event-fx
+ :prepare-text-processing
+ (fn [{:keys [db]} [_ text]]
+   (let [chunks (partition-all 5000 text)
+         total-chunks (count chunks)]
+     {:db (assoc db :processing-state 
+                {:status :processing
+                 :total-chunks total-chunks
+                 :processed-chunks 0
+                 :progress 0})
+      :fx [[:process-chunk {:text text
+                           :db db
+                           :chunk-index 0
+                           :chunk-size 5000
+                           :total-length (count text)}]]})))
+
+(rf/reg-fx
+ :process-chunk
+ (fn [{:keys [text db chunk-index chunk-size total-length]}]
+   (let [start-idx (* chunk-index chunk-size)
+         end-idx (min (+ start-idx chunk-size) total-length)
+         finished? (>= end-idx total-length)
+         progress (/ end-idx total-length)]
+     
+     (if finished?
+       ;; If finished, process the entire text at once
+       (let [words (-> text
+                      (str/replace #"[^a-zA-Z\s]" " ")
+                      (str/replace #"\s+" " ")
+                      (str/trim)
+                      (str/upper-case)
+                      (str/split #"\s+"))
+             unique-words (into #{} (filter #(>= (count %) 3) words))
+             
+             ;; Update UI that we're finding symmetry
+             _ (rf/dispatch [:update-processing-progress 
+                            {:status :finding-symmetry
+                             :progress 100
+                             :word-count (count unique-words)}])
+             
+             ;; Find words with symmetry (time-consuming part)
+             _ (js/setTimeout 
+                #(do
+                   ;; Find mirror symmetry words
+                   (rf/dispatch [:update-processing-progress 
+                                {:status :mirror-symmetry
+                                 :progress 0}])
+                   
+                   (let [mirror-sym-words (filter sym/symmetric-word? unique-words)
+                         mirror-by-axis (group-by sym/axis-id-for-word mirror-sym-words)
+                         
+                         _ (rf/dispatch [:update-processing-progress 
+                                        {:status :rotational-symmetry
+                                         :progress 50}])
+                         
+                         ;; Find rotational symmetry words
+                         rotation-sym-words (filter (fn [word] 
+                                                   (and (sym/rotation-symmetric-word? word)
+                                                        (not (sym/symmetric-word? word))))
+                                                 unique-words)
+                         
+                         ;; Prepare stats
+                         total-words (count unique-words)
+                         mirror-count (count mirror-sym-words)
+                         rotation-count (count rotation-sym-words)
+                         
+                         ;; Sort by length for each axis
+                         mirror-by-axis-sorted (into {} 
+                                                  (map (fn [[axis words]]
+                                                         [axis (sort-by (comp - count) words)])
+                                                       mirror-by-axis))
+                         rotation-sorted (sort-by (comp - count) rotation-sym-words)
+                         
+                         stats {:total-words total-words
+                                :mirror {:count mirror-count
+                                         :by-axis mirror-by-axis-sorted
+                                         :top-10 (take 10 (sort-by (comp - count) mirror-sym-words))}
+                                :rotation {:count rotation-count
+                                          :words rotation-sorted
+                                          :top-10 (take 10 rotation-sorted)}}]
+                     
+                     (rf/dispatch [:update-processing-progress 
+                                  {:status :done
+                                   :progress 100}])
+                     (rf/dispatch [:set-wordlist-stats stats])))
+                30) ;; Short delay for UI to update
+             ]
+         nil) ;; No immediate return, async processing
+       
+       ;; Process the next chunk
+       (do
+         (rf/dispatch [:update-processing-progress 
+                      {:status :processing
+                       :processed-chunks (inc chunk-index)
+                       :progress (* 100 progress)}])
+         (js/setTimeout 
+          #(rf/dispatch-sync [:process-next-chunk 
+                             {:text text
+                              :chunk-index (inc chunk-index)
+                              :chunk-size chunk-size
+                              :total-length total-length}])
+          10)))) ;; Small delay to keep UI responsive
+   nil))
+
+(rf/reg-event-fx
+ :process-next-chunk
+ (fn [{:keys [db]} [_ params]]
+   {:fx [[:process-chunk (assoc params :db db)]]}))
+
+(rf/reg-event-db
+ :set-wordlist-stats
+ (fn [db [_ stats]]
+   (assoc db 
+          :wordlist-stats stats
+          :processing-state {:status :complete})))
 
 ;; -- Views --
 (defn input-field []
@@ -147,6 +306,148 @@
       {:on-click #(rf/dispatch [:update-word "HYRULE"])} 
       "HYRULE"]]]])
 
+;; -- File analysis component --
+(defn text-analysis []
+  (let [processing-state @(rf/subscribe [:processing-state])
+        stats @(rf/subscribe [:wordlist-stats])]
+    [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.border.border-purple-700.text-gray-200.mt-8
+     [:div.flex.justify-between.items-center
+      [:h3.text-xl.text-purple-300.font-semibold "Analyze Text File"]
+      [:div.flex.items-center
+       (when-not (or (nil? processing-state) (= (:status processing-state) :complete))
+         [:div.flex.items-center.mr-3
+          [:svg.animate-spin.-ml-1.mr-2.h-4.w-4.text-purple-500 
+           {:xmlns "http://www.w3.org/2000/svg" :fill "none" :viewBox "0 0 24 24"}
+           [:circle.opacity-25 {:cx "12" :cy "12" :r "10" :stroke "currentColor" :stroke-width "4"}]
+           [:path.opacity-75 {:fill "currentColor" 
+                              :d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"}]]])
+       [:label.bg-purple-700.text-white.px-4.py-2.rounded-lg.hover:bg-purple-600.focus:outline-none.focus:ring-2.focus:ring-purple-500.transition-colors.duration-200.font-medium.cursor-pointer.text-sm
+        [:input.hidden
+         {:type "file"
+          :accept ".txt"
+          :on-change (fn [e]
+                      (when-let [file (-> e .-target .-files (aget 0))]
+                        (rf/dispatch [:process-file file])))}]
+        "Select file"]]]
+     
+     ;; Progress indicator
+     (when processing-state
+       [:div.mt-3
+        (case (:status processing-state)
+          :reading
+          [:div
+           [:div.text-sm.text-gray-400.mb-1 
+            (str "Reading file" (when-let [name (:file-name processing-state)] (str ": " name)))]
+           [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
+            [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+             {:style {:width (str (:progress processing-state) "%")}}]]]
+          
+          :processing
+          [:div
+           [:div.text-sm.text-gray-400.mb-1 
+            (str "Processing text: " 
+                 (:processed-chunks processing-state) 
+                 "/" 
+                 (:total-chunks processing-state) 
+                 " chunks")]
+           [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
+            [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+             {:style {:width (str (:progress processing-state) "%")}}]]]
+          
+          :finding-symmetry
+          [:div
+           [:div.text-sm.text-gray-400.mb-1 
+            (str "Preparing to analyze " (:word-count processing-state) " words")]
+           [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
+            [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+             {:style {:width (str (:progress processing-state) "%")}}]]]
+          
+          :mirror-symmetry
+          [:div
+           [:div.text-sm.text-gray-400.mb-1 "Finding words with mirror symmetry"]
+           [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
+            [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+             {:style {:width (str (:progress processing-state) "%")}}]]]
+          
+          :rotational-symmetry
+          [:div
+           [:div.text-sm.text-gray-400.mb-1 "Finding words with rotational symmetry"]
+           [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
+            [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+             {:style {:width (str (:progress processing-state) "%")}}]]]
+          
+          :done
+          [:div.text-sm.text-gray-400.mb-1 "Finalizing analysis..."]
+          
+          :complete
+          (when stats
+            [:div.text-sm.text-green-400.mb-1 
+             (str "Found " 
+                  (+ (get-in stats [:mirror :count]) 
+                     (get-in stats [:rotation :count])) 
+                  " words with symmetry")])
+          
+          nil)])]))
+
+;; -- Wordlist stats component --
+(defn wordlist-stats []
+  (let [stats @(rf/subscribe [:wordlist-stats])]
+    (when stats
+      [:div.bg-gray-800.p-6.rounded-lg.shadow-lg.mb-8.border.border-purple-700.text-gray-200
+       [:h2.text-2xl.mb-4.text-purple-300.font-semibold "Word List Analysis"]
+       
+       [:div.grid.grid-cols-1.md:grid-cols-3.gap-4.mb-6
+        [:div.bg-gray-700.rounded-lg.p-4.flex.flex-col.items-center.justify-center
+         [:span.text-3xl.font-bold.text-indigo-300 (:total-words stats)]
+         [:span.text-sm.text-gray-300 "Total Unique Words"]]
+        
+        [:div.bg-gray-700.rounded-lg.p-4.flex.flex-col.items-center.justify-center
+         [:span.text-3xl.font-bold.text-indigo-300 (get-in stats [:mirror :count])]
+         [:span.text-sm.text-gray-300 "Mirror Symmetry Words"]]
+        
+        [:div.bg-gray-700.rounded-lg.p-4.flex.flex-col.items-center.justify-center
+         [:span.text-3xl.font-bold.text-indigo-300 (get-in stats [:rotation :count])]
+         [:span.text-sm.text-gray-300 "Rotational Symmetry Words"]]]
+       
+       ;; Top 10 longest mirror symmetry words
+       [:div.mb-6
+        [:h3.text-xl.mb-3.text-indigo-300.font-medium "Top 10 Longest Mirror Symmetry Words"]
+        [:div.flex.flex-wrap.gap-2
+         (for [word (get-in stats [:mirror :top-10])]
+           ^{:key word}
+           [:span.bg-gray-700.px-3.py-1.rounded-md.cursor-pointer.hover:bg-gray-600.transition-colors.text-indigo-200
+            {:on-click #(rf/dispatch [:update-word word])}
+            word])]]
+       
+       ;; Top 10 longest rotational symmetry words
+       [:div.mb-6
+        [:h3.text-xl.mb-3.text-indigo-300.font-medium "Top 10 Longest Rotational Symmetry Words"]
+        [:div.flex.flex-wrap.gap-2
+         (for [word (get-in stats [:rotation :top-10])]
+           ^{:key word}
+           [:span.bg-gray-700.px-3.py-1.rounded-md.cursor-pointer.hover:bg-gray-600.transition-colors.text-indigo-200
+            {:on-click #(rf/dispatch [:update-word word])}
+            word])]]
+       
+       ;; Mirror symmetry by axis
+       [:div
+        [:h3.text-xl.mb-3.text-indigo-300.font-medium "Words by Symmetry Axis"]
+        [:div.grid.grid-cols-1.md:grid-cols-2.gap-4
+         (for [[axis-id words] (get-in stats [:mirror :by-axis])
+               :when (seq words)
+               :let [axis-name (sym/id->axis-name axis-id)
+                     top-words (take 5 words)]]
+           ^{:key axis-id}
+           [:div.bg-gray-700.rounded-lg.p-4
+            [:h4.text-indigo-200.font-medium.mb-2 
+             (str axis-name " axis (" (count words) " words)")]
+            [:div.flex.flex-wrap.gap-1
+             (for [word top-words]
+               ^{:key word}
+               [:span.bg-gray-600.px-2.py-1.rounded-md.text-sm.cursor-pointer.hover:bg-gray-500.transition-colors.text-indigo-100
+                {:on-click #(rf/dispatch [:update-word word])}
+                word])]])]]])))
+
 (defn main-panel []
   [:div.min-h-screen.bg-gray-900.text-purple-100.px-4.py-8.flex.flex-col.items-center
    [:h1.text-5xl.text-center.mb-4.text-purple-300.font-bold.tracking-wider "Wizmetria"]
@@ -154,7 +455,9 @@
    [:div.w-full.max-w-5xl
     [explanation]
     [input-field]
-    [symmetry-display]]])
+    [symmetry-display]
+    [text-analysis]
+    [wordlist-stats]]])
 
 (defn mount-root []
   (rf/dispatch-sync [:initialize])
