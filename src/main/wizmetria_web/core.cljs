@@ -454,16 +454,23 @@
                 {:on-click #(rf/dispatch [:update-word word])}
                 word])]])]]])))
 
+;; -- Footer component --
+(defn footer []
+  [:div.w-full.text-center.py-3.text-gray-400.text-xs.border-t.border-gray-800
+   [:p "© 2025 Arcanum Wizmetrics Unlimited • Illuminating Patterns Through Circular Symmetry"]])
+
 (defn main-panel []
-  [:div.min-h-screen.bg-gray-900.text-purple-100.px-4.py-8.flex.flex-col.items-center
-   [:h1.text-5xl.text-center.mb-4.text-purple-300.font-bold.tracking-wider "Wizmetria"]
-   [:h2.text-2xl.text-center.mb-8.text-indigo-300.font-light "Alphabetical Circular Symmetry Detection"]
-   [:div.w-full.max-w-5xl
-    [explanation]
-    [input-field]
-    [symmetry-display]
-    [text-analysis]
-    [wordlist-stats]]])
+  [:div.min-h-screen.bg-gray-900.text-purple-100.flex.flex-col
+   [:div.flex-grow.px-4.py-8.flex.flex-col.items-center
+    [:h1.text-5xl.text-center.mb-4.text-purple-300.font-bold.tracking-wider "Wizmetria"]
+    [:h2.text-2xl.text-center.mb-8.text-indigo-300.font-light "Alphabetical Circular Symmetry Detection"]
+    [:div.w-full.max-w-5xl
+     [explanation]
+     [input-field]
+     [symmetry-display]
+     [text-analysis]
+     [wordlist-stats]]]
+   [footer]])
 
 (defn mount-root []
   (rf/dispatch-sync [:initialize])
