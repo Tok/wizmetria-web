@@ -37,13 +37,19 @@ if (-not (Test-Path -Path "public" -PathType Container)) {
     exit 1
 }
 
-# Update files in the root (for GitHub Pages)
-Write-Host "Updating files for GitHub Pages..." -ForegroundColor Cyan
-Copy-Item -Path "public\*" -Destination "." -Recurse -Force
+# Update only HTML and JS files in the root (for GitHub Pages)
+Write-Host "Updating HTML and JS files for GitHub Pages..." -ForegroundColor Cyan
+# HTML files
+Copy-Item -Path "public\*.html" -Destination "." -Force
+# JS files
+if (-not (Test-Path -Path "js" -PathType Container)) {
+    New-Item -Path "js" -ItemType Directory -Force | Out-Null
+}
+Copy-Item -Path "public\js\*" -Destination "js\" -Recurse -Force
 
-# Add all changes to git
-Write-Host "Adding changes to git..." -ForegroundColor Cyan
-git add -A
+# Add only the updated files to git
+Write-Host "Adding updated files to git..." -ForegroundColor Cyan
+git add *.html js/
 
 # Commit changes with timestamp
 Write-Host "Committing changes..." -ForegroundColor Cyan

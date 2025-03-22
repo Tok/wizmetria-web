@@ -4,7 +4,7 @@ set -e
 echo "Starting deployment process..."
 
 # Store the current branch name
-CURRENT_BRANCH=$(git symbolic-ref --short HEAD)
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 echo "Current branch: $CURRENT_BRANCH"
 
 # Create a backup of the deploy script
@@ -12,27 +12,43 @@ cp deploy.sh deploy.sh.bak
 
 # Save working directory changes (if any)
 echo "Saving any uncommitted changes..."
-git stash save "Stashed changes before deployment"
+git stash push -m "Stashed changes before deployment"
 
 # Build the project using npx to ensure shadow-cljs is found
 echo "Building project..."
 npx shadow-cljs release app
 
+# Make sure we can cleanly checkout gh-pages
+git fetch origin
+
 # Switch to gh-pages branch
 echo "Switching to gh-pages branch..."
-git checkout gh-pages
+git checkout gh-pages || git checkout -b gh-pages origin/gh-pages
 
 # Copy the built files from public/ directory
 echo "Copying built files..."
 git checkout $CURRENT_BRANCH -- public/
 
-# Update files in the root (for GitHub Pages)
-echo "Updating files for GitHub Pages..."
-cp -r public/* .
+# Check if public directory exists
+if [ ! -d "public" ]; then
+  echo "ERROR: public directory not found"
+  git checkout $CURRENT_BRANCH
+  exit 1
+fi
 
-# Add all changes to git
-echo "Adding changes to git..."
-git add -A
+# Update only HTML and JS files in the root (for GitHub Pages)
+echo "Updating HTML and JS files for GitHub Pages..."
+# Copy HTML files
+cp -f public/*.html .
+
+# Create js directory if it doesn't exist
+mkdir -p js
+# Copy JS files
+cp -rf public/js/* js/
+
+# Add only the updated files to git
+echo "Adding updated files to git..."
+git add *.html js/
 
 # Commit changes with date stamp
 echo "Committing changes..."

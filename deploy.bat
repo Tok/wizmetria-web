@@ -29,17 +29,24 @@ REM Copy the built files from public/ directory
 echo Copying built files...
 git checkout %CURRENT_BRANCH% -- public/
 
-REM Update files in the root (for GitHub Pages)
-echo Updating files for GitHub Pages...
+REM Update only HTML and JS files in the root (for GitHub Pages)
+echo Updating HTML and JS files for GitHub Pages...
 if not exist public (
   echo ERROR: public directory not found
   goto cleanup
 )
-xcopy /E /Y /I public\* . > nul
 
-REM Add all changes to git
-echo Adding changes to git...
-git add -A
+REM Copy HTML files
+copy /Y public\*.html .
+
+REM Create js directory if it doesn't exist
+if not exist js mkdir js
+REM Copy JS files
+xcopy /E /Y /I public\js\* js\ > nul
+
+REM Add only the updated files to git
+echo Adding updated files to git...
+git add *.html js/
 
 REM Prepare timestamp for commit message
 for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set dt=%%a
