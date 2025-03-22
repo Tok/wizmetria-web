@@ -47,9 +47,11 @@ if (-not (Test-Path -Path "js" -PathType Container)) {
 }
 Copy-Item -Path "public\js\*" -Destination "js\" -Recurse -Force
 
-# Add only the updated files to git
+# Add only the specific updated files to git (avoid node_modules)
 Write-Host "Adding updated files to git..." -ForegroundColor Cyan
-git add *.html js/
+git add index.html
+git add js/main.js
+git add js/manifest.edn
 
 # Commit changes with timestamp
 Write-Host "Committing changes..." -ForegroundColor Cyan

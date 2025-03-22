@@ -46,9 +46,11 @@ mkdir -p js
 # Copy JS files
 cp -rf public/js/* js/
 
-# Add only the updated files to git
-echo "Adding updated files to git..."
-git add *.html js/
+# Add only specific updated files to git (avoid node_modules)
+echo "Adding specific updated files to git..."
+git add index.html
+git add js/main.js
+git add js/manifest.edn
 
 # Commit changes with date stamp
 echo "Committing changes..."

@@ -44,9 +44,11 @@ if not exist js mkdir js
 REM Copy JS files
 xcopy /E /Y /I public\js\* js\ > nul
 
-REM Add only the updated files to git
+REM Add only specific updated files to git (avoid node_modules)
 echo Adding updated files to git...
-git add *.html js/
+git add index.html
+git add js/main.js
+git add js/manifest.edn
 
 REM Prepare timestamp for commit message
 for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set dt=%%a
