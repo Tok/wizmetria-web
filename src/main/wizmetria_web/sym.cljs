@@ -44,18 +44,11 @@
   [word]
   (let [w (util/clean word)
         chars (vec (seq w))]
-    (cond
-      ;; Special case for HYRULE
-      (= w "HYRULE")
-      true
-      
-      ;; General case for rotation symmetry
-      :else
-      (let [offsets (map #(- (ordinal (chars (inc %))) 
-                             (ordinal (chars %)))
-                        (range 0 (dec (count chars))))]
-        (and (> (count chars) 2)
-             (every? #(and (> % 0) (<= % 2)) offsets))))))
+    (let [offsets (map #(- (ordinal (chars (inc %))) 
+                           (ordinal (chars %)))
+                      (range 0 (dec (count chars))))]
+      (and (> (count chars) 2)
+           (every? #(and (> % 0) (<= % 2)) offsets)))))
 
 (defn symmetric? [word sum]
   (->> [sum (+ sum 26) (+ sum 52)]
@@ -72,6 +65,18 @@
   (let [cleaned (util/clean word)
         mirror-sym (some (fn [sum] (sym? cleaned sum)) (range 1 53))]
     (or mirror-sym (rotation-sym? cleaned))))
+
+(defn rotation-symmetric-word? [word]
+  (let [cleaned (util/clean word)
+        chars (vec (seq cleaned))
+        char-freqs (frequencies chars)]
+    (and (> (count chars) 2)
+         (every? (fn [[c freq]]
+                   (let [ord (ordinal c)
+                         pair-ord (mod (+ ord 13) 26)
+                         pair-char (char (+ pair-ord (.charCodeAt "@" 0)))]
+                     (= freq (get char-freqs pair-char 0))))
+                 char-freqs))))
 
 (defn clean [s]
   (util/clean s))
@@ -94,4 +99,4 @@
   (filter (comp not-empty second) results))
 
 (defn evaluate [words] 
-  (->> 26 range (map #(find-sym % words)) filter-results)) 
+  (->> 26 range (map #(find-sym % words)) filter-results))

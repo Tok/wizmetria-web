@@ -1,7 +1,7 @@
 (ns wizmetria-web.sym-test
   (:require
    [wizmetria-web.sym :as sym]
-   [clojure.test :refer [deftest testing is are run-tests]]))
+   [clojure.test :refer [deftest testing is are]]))
 
 (deftest wizard-test 
   (testing "WIZARD has A-Z symmetry"
@@ -82,9 +82,5 @@
       (is (sym/symmetric? word 23)))))
 
 (deftest hyrule-test
-  (testing "HYRULE has symmetry"
-    (is (sym/symmetric-word? "HYRULE"))))
-
-;; Run all tests
-(defn ^:export test-runner []
-  (run-tests 'wizmetria-web.sym-test)) 
+  (testing "HYRULE has rotation symmetry"
+    (is (sym/rotation-symmetric-word? "HYRULE")))) 
