@@ -101,7 +101,7 @@
            (cond
              has-mirror-symmetry "Mirror Symmetry"
              has-rotation-symmetry "Rotation Symmetry"
-             :else "Word Visualization")]
+             :else "No Symmetry")]
           [:div.alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1
            [grid/symmetry-view word
             (cond 
