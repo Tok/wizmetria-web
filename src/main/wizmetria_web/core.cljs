@@ -121,35 +121,25 @@
     [:p.mb-2 [:span.text-indigo-300.font-medium "Mirror symmetry"] " examples:"]
     [:p 
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "WIZARD"])
-                     (rf/dispatch [:check-symmetry]))} "WIZARD"] ", "
+      {:on-click #(rf/dispatch [:update-word "WIZARD"])} "WIZARD"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "JAGUAR"])
-                     (rf/dispatch [:check-symmetry]))} "JAGUAR"] ", "
+      {:on-click #(rf/dispatch [:update-word "JAGUAR"])} "JAGUAR"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "METAPH"])
-                     (rf/dispatch [:check-symmetry]))} "METAPH"] ", "
+      {:on-click #(rf/dispatch [:update-word "METAPH"])} "METAPH"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "UNSEWING"])
-                     (rf/dispatch [:check-symmetry]))} "UNSEWING"] ", "
+      {:on-click #(rf/dispatch [:update-word "UNSEWING"])} "UNSEWING"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "VOTING"])
-                     (rf/dispatch [:check-symmetry]))} "VOTING"] ", "
+      {:on-click #(rf/dispatch [:update-word "VOTING"])} "VOTING"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "BATHMATS"])
-                     (rf/dispatch [:check-symmetry]))} "BATHMATS"] ", "
+      {:on-click #(rf/dispatch [:update-word "BATHMATS"])} "BATHMATS"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "TICKET"])
-                     (rf/dispatch [:check-symmetry]))} "TICKET"] ", "
+      {:on-click #(rf/dispatch [:update-word "TICKET"])} "TICKET"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "NETFUL"])
-                     (rf/dispatch [:check-symmetry]))} "NETFUL"] ", "
+      {:on-click #(rf/dispatch [:update-word "NETFUL"])} "NETFUL"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "FLUENT"])
-                     (rf/dispatch [:check-symmetry]))} "FLUENT"] ", "
+      {:on-click #(rf/dispatch [:update-word "FLUENT"])} "FLUENT"] ", "
      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-      {:on-click #(do (rf/dispatch [:update-word "CROTCHET"])
-                     (rf/dispatch [:check-symmetry]))} "CROTCHET"]]
+      {:on-click #(rf/dispatch [:update-word "CROTCHET"])} "CROTCHET"]]
     
     [:p.mt-3.mb-2 [:span.text-indigo-300.font-medium "Rotational symmetry"] " example:"]
     [:p 
