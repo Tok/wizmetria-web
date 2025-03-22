@@ -12,6 +12,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "shadow-cljs": "2.28.21"
+    "shadow-cljs": "2.28.21",
+    "sharp": "^0.33.5"
   }
 }
