@@ -54,16 +54,39 @@ if not exist public (
 REM Copy HTML files
 copy /Y public\*.html .
 
+REM Fix paths in index.html to use /wizmetria-web/ prefix
+echo Fixing paths in HTML files...
+if exist index.html (
+  REM Create a temporary file with fixed paths
+  powershell -Command "Get-Content -Path 'index.html' -Raw | ForEach-Object { $_ -replace 'src=\"/js/', 'src=\"/wizmetria-web/js/' -replace 'href=\"/js/', 'href=\"/wizmetria-web/js/' -replace 'href=\"/site.webmanifest\"', 'href=\"/wizmetria-web/site.webmanifest\"' -replace 'src=\"/img/', 'src=\"/wizmetria-web/img/' -replace 'href=\"/img/', 'href=\"/wizmetria-web/img/' -replace 'href=\"/css/', 'href=\"/wizmetria-web/css/' } | Set-Content -Path 'index.html' -Force"
+)
+
+REM Copy site.webmanifest if it exists
+if exist public\site.webmanifest (
+  copy /Y public\site.webmanifest .
+  if exist site.webmanifest (
+    powershell -Command "Get-Content -Path 'site.webmanifest' -Raw | ForEach-Object { $_ -replace '\"src\": \"/', '\"src\": \"/wizmetria-web/' } | Set-Content -Path 'site.webmanifest' -Force"
+  )
+)
+
 REM Create js directory if it doesn't exist
 if not exist js mkdir js
 REM Copy JS files
 xcopy /E /Y /I public\js\* js\ > nul 2>&1
 
+REM Copy image files if they exist
+if exist public\img (
+  if not exist img mkdir img
+  xcopy /E /Y /I public\img\* img\ > nul 2>&1
+)
+
 REM Add only specific updated files to git
 echo Adding updated files to git...
 git add index.html .gitignore
+if exist site.webmanifest git add site.webmanifest
 if exist js\main.js git add js/main.js
 if exist js\manifest.edn git add js/manifest.edn
+if exist img git add img/
 
 REM Prepare timestamp for commit message
 for /f "tokens=2 delims==" %%a in ('wmic OS Get localdatetime /value') do set dt=%%a

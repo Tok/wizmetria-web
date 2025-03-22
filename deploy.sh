@@ -56,6 +56,26 @@ echo "Updating HTML and JS files for GitHub Pages..."
 # Copy HTML files
 cp -f public/*.html .
 
+# Fix paths in index.html to use /wizmetria-web/ prefix
+echo "Fixing paths in HTML files..."
+if [ -f "index.html" ]; then
+  # Use sed to fix paths
+  sed -i 's|src="/js/|src="/wizmetria-web/js/|g' index.html
+  sed -i 's|href="/js/|href="/wizmetria-web/js/|g' index.html
+  sed -i 's|href="/site.webmanifest"|href="/wizmetria-web/site.webmanifest"|g' index.html
+  sed -i 's|src="/img/|src="/wizmetria-web/img/|g' index.html
+  sed -i 's|href="/img/|href="/wizmetria-web/img/|g' index.html
+  sed -i 's|href="/css/|href="/wizmetria-web/css/|g' index.html
+fi
+
+# Copy site.webmanifest if it exists
+if [ -f "public/site.webmanifest" ]; then
+  cp -f public/site.webmanifest .
+  if [ -f "site.webmanifest" ]; then
+    sed -i 's|"src": "/|"src": "/wizmetria-web/|g' site.webmanifest
+  fi
+fi
+
 # Create js directory if it doesn't exist
 mkdir -p js
 # Copy JS files
@@ -65,11 +85,19 @@ else
   echo "WARNING: public/js directory not found. Continuing anyway..."
 fi
 
+# Copy image files if they exist
+if [ -d "public/img" ]; then
+  mkdir -p img
+  cp -rf public/img/* img/ 2>/dev/null || true
+fi
+
 # Add only specific updated files to git
 echo "Adding specific updated files to git..."
 git add index.html .gitignore
+[ -f "site.webmanifest" ] && git add site.webmanifest
 [ -f "js/main.js" ] && git add js/main.js
 [ -f "js/manifest.edn" ] && git add js/manifest.edn
+[ -d "img" ] && git add img/
 
 # Commit changes with date stamp
 echo "Committing changes..."
