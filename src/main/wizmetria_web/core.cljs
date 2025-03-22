@@ -1,7 +1,5 @@
 (ns wizmetria-web.core
-  (:require [reagent.dom :as rdom]
-            [reagent.dom.client :as rdomc]
-            [reagent.core :as r]
+  (:require [reagent.dom.client :as rdomc]
             [re-frame.core :as rf]
             [wizmetria-web.sym :as sym]
             [wizmetria-web.grid :as grid]
@@ -105,14 +103,13 @@
                  :processed-chunks 0
                  :progress 0})
       :fx [[:process-chunk {:text text
-                           :db db
                            :chunk-index 0
                            :chunk-size 5000
                            :total-length (count text)}]]})))
 
 (rf/reg-fx
  :process-chunk
- (fn [{:keys [text db chunk-index chunk-size total-length]}]
+ (fn [{:keys [text chunk-index chunk-size total-length]}]
    (let [start-idx (* chunk-index chunk-size)
          end-idx (min (+ start-idx chunk-size) total-length)
          finished? (>= end-idx total-length)
@@ -201,7 +198,7 @@
 (rf/reg-event-fx
  :process-next-chunk
  (fn [{:keys [db]} [_ params]]
-   {:fx [[:process-chunk (assoc params :db db)]]}))
+   {:fx [[:process-chunk params]]}))
 
 (rf/reg-event-db
  :set-wordlist-stats
