@@ -78,6 +78,9 @@
                      (= freq (get char-freqs pair-char 0))))
                  char-freqs))))
 
+(defn rotation-symmetry-axis-id []
+  13) ;; Always FG-ST for 180-degree rotation
+
 (defn clean [s]
   (util/clean s))
 

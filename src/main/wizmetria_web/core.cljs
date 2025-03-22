@@ -59,7 +59,7 @@
         has-mirror-symmetry (some? axis-id)
         has-rotation-symmetry (and (not has-mirror-symmetry)
                                   (seq cleaned-word)
-                                  (sym/rotation-sym? cleaned-word))]
+                                  (sym/rotation-symmetric-word? cleaned-word))]
     [:div.mt-4.text-center
      (if (empty? cleaned-word)
        [:p.text-gray-400 "Enter a word to check for symmetry"]
@@ -71,7 +71,8 @@
          
          has-rotation-symmetry
          [:p.text-green-400 
-          (str "\"" cleaned-word "\" has rotational symmetry")]
+          (str "\"" cleaned-word "\" has rotational symmetry around axis " 
+               (sym/id->axis-name (sym/rotation-symmetry-axis-id)))]
          
          :else
          [:p.text-red-400 
@@ -82,9 +83,11 @@
         word @(rf/subscribe [:word])
         cleaned-word (util/clean word)
         word-axis-id (when (not-empty cleaned-word) (sym/axis-id-for-word cleaned-word))
-        has-rotation-symmetry (and (not word-axis-id)
+        has-mirror-symmetry (some? word-axis-id)
+        has-rotation-symmetry (and (not has-mirror-symmetry)
                                  (seq cleaned-word)
-                                 (sym/rotation-sym? cleaned-word))]
+                                 (sym/rotation-symmetric-word? cleaned-word))
+        rotation-axis-id (sym/rotation-symmetry-axis-id)]
     [:div
      (when (and results (seq results))
        [:div.mt-8.w-full.flex.flex-col.items-center
@@ -93,22 +96,17 @@
         [:div.flex.flex-wrap.justify-center.gap-8.w-full.mt-6
          (for [[axis-id symmetric-words] results
                :when (seq symmetric-words)
-               :let [has-symmetry (= axis-id word-axis-id)]]
+               :let [is-mirror-symmetry-axis (= axis-id word-axis-id)
+                     is-rotation-symmetry-axis (and has-rotation-symmetry (= axis-id rotation-axis-id))
+                     should-show-axis (or is-mirror-symmetry-axis is-rotation-symmetry-axis)]]
            ^{:key axis-id}
            [:div.bg-gray-800.p-5.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700.transform.transition-all.duration-300.hover:scale-105
             [:h3.text-xl.mb-3.text-center.text-indigo-300.font-medium 
-             (str "Axis: " (sym/id->axis-name axis-id))]
+             (str "Axis: " (sym/id->axis-name axis-id)
+                  (when is-mirror-symmetry-axis " (Mirror Symmetry)")
+                  (when is-rotation-symmetry-axis " (Rotation Symmetry)"))]
             [:div.alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1
-             [grid/symmetry-view word axis-id has-symmetry]]])]])
-     
-     ;; Display rotation symmetry visualization if applicable
-     (when has-rotation-symmetry
-       [:div.mt-8.w-full.flex.flex-col.items-center
-        [:h2.text-2xl.mb-6.text-center.text-purple-300.font-semibold "Rotation Symmetry"]
-        [:div.bg-gray-800.p-5.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700
-         [:h3.text-xl.mb-3.text-center.text-indigo-300.font-medium "Consecutive Letter Pattern"]
-         [:div.alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1
-          [grid/circle-view word]]]])]))
+             [grid/symmetry-view word axis-id should-show-axis]]])]])]))
 
 (defn explanation []
   [:div.bg-gray-800.p-6.rounded-lg.shadow-lg.mb-8.border.border-purple-700.text-gray-200
