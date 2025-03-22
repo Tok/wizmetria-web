@@ -144,7 +144,24 @@
                                        pair-ord (mod (+ ord 13) 26)
                                        pair-char (char (+ pair-ord (.charCodeAt "@" 0)))]
                                  :when (contains? char-set pair-char)]
-                             [c pair-char])))]
+                             [c pair-char])))
+        ;; For mirror symmetry, find letter pairs that reflect across the axis
+        mirror-pairs (when (and has-symmetry (not is-rotation-axis) axis-id (seq cleaned-word))
+                      (let [chars (vec (seq cleaned-word))
+                            pairs (for [i (range (count chars))
+                                       j (range (inc i) (count chars))
+                                       :let [c1 (chars i)
+                                             c2 (chars j)
+                                             ord1 (ordinal c1)
+                                             ord2 (ordinal c2)]
+                                       :when (= (mod (+ ord1 ord2) 26) (mod (+ axis-id 2) 26))]
+                                   [c1 c2])]
+                        (filter (fn [[c1 c2]] 
+                                  ;; Filter out adjacent letters that are just part of the word sequence
+                                  (let [idx1 (.indexOf cleaned-word c1)
+                                        idx2 (.indexOf cleaned-word c2)]
+                                    (not= (Math/abs (- idx1 idx2)) 1)))
+                                pairs)))]
     
     [:svg {:width 360 :height 360 :viewBox "0 0 360 360"}
      ;; Draw outer circle
@@ -167,7 +184,34 @@
        (let [word-letters (seq cleaned-word)
              pairs (map vector word-letters (rest word-letters))]
          [:g
-          ;; First draw rotation pair connections (if applicable)
+          ;; Draw mirror pair connections (if applicable)
+          (when (and (not is-rotation-axis) has-symmetry (seq mirror-pairs))
+            [:g 
+             (for [[c1 c2] mirror-pairs
+                   :let [pos1 (get letter-map c1)
+                         pos2 (get letter-map c2)
+                         intersection1 (line-circle-intersection pos1)
+                         intersection2 (line-circle-intersection pos2)]
+                   :when (and pos1 pos2)]
+               ^{:key (str "mirror-" c1 c2)}
+               [:g
+                ;; Thin background line
+                [:line {:x1 (:x intersection1) :y1 (:y intersection1)
+                        :x2 (:x intersection2) :y2 (:y intersection2)
+                        :stroke "#c026d3" :stroke-width 1.5
+                        :stroke-opacity 0.1}]
+                ;; Main dashed line
+                [:line {:x1 (:x intersection1) :y1 (:y intersection1)
+                        :x2 (:x intersection2) :y2 (:y intersection2)
+                        :stroke "#c026d3" :stroke-width 1
+                        :stroke-dasharray "2,4"}]
+                ;; Smaller highlight circles for paired letters
+                [:circle {:cx (:x intersection1) :cy (:y intersection1) 
+                         :r 3 :fill "#c026d3" :fill-opacity 0.15}]
+                [:circle {:cx (:x intersection2) :cy (:y intersection2) 
+                         :r 3 :fill "#c026d3" :fill-opacity 0.15}]])]) 
+          
+          ;; Draw rotation pair connections (if applicable)
           (when (and is-rotation-axis has-symmetry)
             [:g 
              (for [[c1 c2] rotation-pairs
@@ -178,39 +222,39 @@
                    :when (and pos1 pos2)]
                ^{:key (str "rotation-" c1 c2)}
                [:g
-                ;; Wide background line for visibility
+                ;; Thinner background line
                 [:line {:x1 (:x intersection1) :y1 (:y intersection1)
                         :x2 (:x intersection2) :y2 (:y intersection2)
-                        :stroke "#f472b6" :stroke-width 6
-                        :stroke-opacity 0.15}]
-                ;; Main dashed line
+                        :stroke "#f472b6" :stroke-width 1.5
+                        :stroke-opacity 0.1}]
+                ;; Thinner main dashed line
                 [:line {:x1 (:x intersection1) :y1 (:y intersection1)
                         :x2 (:x intersection2) :y2 (:y intersection2)
-                        :stroke "#f472b6" :stroke-width 2.5
-                        :stroke-dasharray "4,3"}]
-                ;; Highlight circles for paired letters
+                        :stroke "#f472b6" :stroke-width 1
+                        :stroke-dasharray "2,4"}]
+                ;; Smaller highlight circles
                 [:circle {:cx (:x intersection1) :cy (:y intersection1) 
-                         :r 8 :fill "#f472b6" :fill-opacity 0.3}]
+                         :r 3 :fill "#f472b6" :fill-opacity 0.15}]
                 [:circle {:cx (:x intersection2) :cy (:y intersection2) 
-                         :r 8 :fill "#f472b6" :fill-opacity 0.3}]])]) 
+                         :r 3 :fill "#f472b6" :fill-opacity 0.15}]])]) 
           
           ;; Draw symmetry axis
           (when has-symmetry
             [:g
-             ;; Wide semi-transparent background for visibility
+             ;; Thinner semi-transparent background
              [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
                      :stroke (if is-rotation-axis "#f472b6" "#c026d3") 
-                     :stroke-width 10 
+                     :stroke-width 6
                      :stroke-opacity 0.2}]
              ;; Main axis line
              [:line {:x1 x1 :y1 y1 :x2 x2 :y2 y2
                      :stroke (if is-rotation-axis "#f472b6" "#c026d3")
-                     :stroke-width 2.5 
+                     :stroke-width 2 
                      :stroke-dasharray (if is-rotation-axis "10,5" "5,5")}]
-             ;; Endpoint markers
-             [:circle {:cx x1 :cy y1 :r 5
+             ;; Smaller endpoint markers
+             [:circle {:cx x1 :cy y1 :r 4
                       :fill (if is-rotation-axis "#f472b6" "#c026d3")}]
-             [:circle {:cx x2 :cy y2 :r 5
+             [:circle {:cx x2 :cy y2 :r 4
                       :fill (if is-rotation-axis "#f472b6" "#c026d3")}]])
           
           ;; Regular word connection lines
