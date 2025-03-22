@@ -319,9 +319,7 @@
     
     [:div.flex-1
      [:p.mb-1 [:span.text-indigo-300.font-medium (t :rotation-symmetry)] " " (t :examples) ":"]
-     [:p 
-      [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-       {:on-click #(rf/dispatch [:update-word "TIP"])} "TIP"] ", "
+     [:p
       [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
        {:on-click #(rf/dispatch [:update-word "HYRULE"])} "HYRULE"] ", "
       [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
