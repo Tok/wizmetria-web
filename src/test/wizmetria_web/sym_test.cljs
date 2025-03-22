@@ -85,15 +85,26 @@
   (testing "HYRULE has rotation symmetry"
     (is (sym/rotation-symmetric-word? "HYRULE")))) 
 
-(deftest mirror-axis-test
-  (testing "mirror axis names"
+(deftest single-letter-mirror-axis-test
+  (testing "single letter mirror axis names"
     (is (= (sym/id->axis-name (sym/axis-id-for-word "A")) "A-N"))
     (is (= (sym/id->axis-name (sym/axis-id-for-word "B")) "B-O"))
     (is (= (sym/id->axis-name (sym/axis-id-for-word "C")) "C-P"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "Z")) "M-Z"))))
+
+(deftest clockwise-letter-pair-mirror-axis-test
+  (testing "clockwise letter pair mirror axis names"
     (is (= (sym/id->axis-name (sym/axis-id-for-word "AB")) "AB-NO"))
-    (is (= (sym/id->axis-name (sym/axis-id-for-word "BC")) "BC-OP"))    
-    (is (= (sym/id->axis-name (sym/axis-id-for-word "CD")) "CD-PQ"))    
-    ))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "BC")) "BC-OP"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "CD")) "CD-PQ"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "ZA")) "MN-ZA"))))
+
+(deftest counter-clockwise-letter-pair-mirror-axis-test
+  (testing "counter clockwise letter pair mirror axis names"
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "BA")) "AB-NO"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "CB")) "BC-OP"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "DC")) "CD-PQ"))
+    (is (= (sym/id->axis-name (sym/axis-id-for-word "AZ")) "MN-ZA"))))
 
 (deftest wizard-mirror-axis-test
   (testing "WIZARD has mirror symmetry MN-ZA"

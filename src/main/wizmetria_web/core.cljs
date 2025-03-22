@@ -85,7 +85,7 @@
         cleaned-word (util/clean word)
         word-axis-id (when (not-empty cleaned-word) (sym/axis-id-for-word cleaned-word))
         rotation-axis-id (when (not-empty cleaned-word) (sym/rotation-symmetry-axis-id-for-word cleaned-word))
-        has-mirror-symmetry (some? word-axis-id)
+        has-mirror-symmetry (and (some? word-axis-id) (sym/symmetric-word? cleaned-word))
         has-rotation-symmetry (and (not has-mirror-symmetry)
                                  (seq cleaned-word)
                                  (sym/rotation-symmetric-word? cleaned-word))]
@@ -95,19 +95,20 @@
         [:h2.text-2xl.mb-6.text-center.text-purple-300.font-semibold "Symmetry Results"]
         [check-word]
         [:div.flex.flex-wrap.justify-center.gap-8.w-full.mt-6
-         (for [[axis-id symmetric-words] results
-               :when (seq symmetric-words)
-               :let [is-mirror-symmetry-axis (= axis-id word-axis-id)
-                     is-rotation-symmetry-axis (and has-rotation-symmetry (= axis-id rotation-axis-id))
-                     should-show-axis (or is-mirror-symmetry-axis is-rotation-symmetry-axis)]]
-           ^{:key axis-id}
-           [:div.bg-gray-800.p-5.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700.transform.transition-all.duration-300.hover:scale-105
-            [:h3.text-xl.mb-3.text-center.text-indigo-300.font-medium 
-             (str "Axis: " (sym/id->axis-name axis-id)
-                  (when is-mirror-symmetry-axis " (Mirror Symmetry)")
-                  (when is-rotation-symmetry-axis " (Rotation Symmetry)"))]
-            [:div.alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1
-             [grid/symmetry-view word axis-id should-show-axis]]])]])]))
+         ;; Show a single visualization with correct symmetry information
+         [:div.bg-gray-800.p-5.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700.transform.transition-all.duration-300.hover:scale-105
+          [:h3.text-xl.mb-3.text-center.text-indigo-300.font-medium 
+           (cond
+             has-mirror-symmetry "Mirror Symmetry"
+             has-rotation-symmetry "Rotation Symmetry"
+             :else "Word Visualization")]
+          [:div.alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1
+           [grid/symmetry-view word
+            (cond 
+              has-mirror-symmetry word-axis-id
+              has-rotation-symmetry rotation-axis-id
+              :else nil)
+            (or has-mirror-symmetry has-rotation-symmetry)]]]]])]))
 
 (defn explanation []
   [:div.bg-gray-800.p-6.rounded-lg.shadow-lg.mb-8.border.border-purple-700.text-gray-200
