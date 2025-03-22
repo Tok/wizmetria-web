@@ -68,6 +68,7 @@
        (let [word-letters (seq cleaned-word)
              pairs (map vector word-letters (rest word-letters))]
          [:g
+          ;; Lines between consecutive letters
           (for [[from-letter to-letter] pairs
                 :let [from-pos (get letter-map from-letter)
                       to-pos (get letter-map to-letter)
@@ -82,11 +83,13 @@
           
           ;; Draw small circles at each letter position in the word
           (for [letter word-letters
-                :let [pos (get letter-map letter)]
+                :let [pos (get letter-map letter)
+                      ;; Calculate intersection with the circle edge
+                      intersection (line-circle-intersection pos)]
                 :when pos]
             ^{:key (str "dot-" letter)}
-            [:circle {:cx (:x pos) :cy (:y pos) :r 4
-                      :fill "#3b82f6"}])])]))
+            [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
+                      :fill "#3b82f6"}])]))]))
 
 ;; Draw a symmetry axis on the circle
 (defn axis-view [axis-id]
@@ -166,8 +169,10 @@
           
           ;; Circles at letter positions
           (for [letter word-letters
-                :let [pos (get letter-map letter)]
+                :let [pos (get letter-map letter)
+                      ;; Calculate intersection with the circle edge
+                      intersection (line-circle-intersection pos)]
                 :when pos]
             ^{:key (str "dot-" letter)}
-            [:circle {:cx (:x pos) :cy (:y pos) :r 4
-                      :fill "#3b82f6"}])])])))
+            [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
+                      :fill "#3b82f6"}])]))]))
