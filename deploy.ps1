@@ -37,6 +37,14 @@ if (-not (Test-Path -Path "public" -PathType Container)) {
     exit 1
 }
 
+# Create .gitignore to ignore node_modules
+Write-Host "Setting up .gitignore for gh-pages..." -ForegroundColor Cyan
+@"
+node_modules/
+.shadow-cljs/
+public/
+"@ | Out-File -FilePath ".gitignore" -Encoding UTF8 -Force
+
 # Update only HTML and JS files in the root (for GitHub Pages)
 Write-Host "Updating HTML and JS files for GitHub Pages..." -ForegroundColor Cyan
 # HTML files
@@ -45,13 +53,21 @@ Copy-Item -Path "public\*.html" -Destination "." -Force
 if (-not (Test-Path -Path "js" -PathType Container)) {
     New-Item -Path "js" -ItemType Directory -Force | Out-Null
 }
-Copy-Item -Path "public\js\*" -Destination "js\" -Recurse -Force
+if (Test-Path -Path "public\js") {
+    Copy-Item -Path "public\js\*" -Destination "js\" -Recurse -Force
+} else {
+    Write-Host "WARNING: public\js directory not found. Continuing anyway..." -ForegroundColor Yellow
+}
 
-# Add only the specific updated files to git (avoid node_modules)
+# Add only the specific updated files to git
 Write-Host "Adding updated files to git..." -ForegroundColor Cyan
-git add index.html
-git add js/main.js
-git add js/manifest.edn
+git add index.html .gitignore
+if (Test-Path -Path "js\main.js") {
+    git add js/main.js
+}
+if (Test-Path -Path "js\manifest.edn") {
+    git add js/manifest.edn
+}
 
 # Commit changes with timestamp
 Write-Host "Committing changes..." -ForegroundColor Cyan
