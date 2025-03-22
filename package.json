@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "shadow-cljs watch app",
     "build": "shadow-cljs release app",
-    "test": "shadow-cljs compile test"
+    "test": "shadow-cljs compile test",
+    "deploy": "node -e \"require('fs').existsSync('deploy.bat') && process.platform === 'win32' ? require('child_process').execSync('deploy.bat', {stdio: 'inherit'}) : require('child_process').execSync('bash deploy.sh', {stdio: 'inherit'})\""
   },
   "dependencies": {
     "react": "^18.2.0",
