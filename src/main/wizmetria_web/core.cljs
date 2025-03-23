@@ -278,6 +278,7 @@
         [:div.flex.flex-wrap.justify-center.gap-6.w-full.mt-4
          ;; Show a single visualization with correct symmetry information
          [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700.transform.transition-all.duration-300.hover:scale-105
+          {:class (when (and (not has-mirror-symmetry) (not has-rotation-symmetry)) "no-symmetry-container")}
           [:h3.text-lg.mb-2.text-center.text-indigo-300.font-medium 
            (cond
              has-mirror-symmetry (t :mirror-symmetry)
