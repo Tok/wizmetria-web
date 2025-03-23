@@ -65,6 +65,11 @@
         .alphabet-circle {
             min-height: 400px;
             position: relative;
+            overflow: visible !important;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .shiny-enabled .alphabet-circle {
@@ -604,16 +609,21 @@
         /* Fix for circle container */
         .shiny-enabled .bg-gray-800.p-4.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700 {
             overflow: visible !important;
-            transform-style: preserve-3d;
-            isolation: isolate;
+            min-height: 460px;
+            transition: all 0.3s ease;
         }
         
         /* Ensure the entire symmetry display area has space for the glow */
         .shiny-enabled .alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1 {
-            margin: 10px;
-            overflow: visible !important;
-            transform-style: preserve-3d;
-            isolation: isolate;
+            padding: 1rem !important;
+            margin: 0 !important;
+            height: 400px;
+            width: 400px;
+            max-height: 400px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         /* Setting z-index for SVG elements */
@@ -643,6 +653,62 @@
             .alphabet-circle svg {
                 transform: scale(0.95);
             }
+        }
+        
+        /* Make outer circle visible in non-shiny mode too */
+        svg circle.outer-circle {
+            stroke: rgba(168, 85, 247, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        /* Ensure consistent padding and margin in the alphabet-circle container */
+        .alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1 {
+            padding: 1rem !important;
+            margin: 0 !important;
+            height: 400px;
+            width: 400px;
+            max-height: 400px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .shiny-enabled .alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1 {
+            margin: 10px !important;
+            padding: 1rem !important;
+            height: 400px;
+            width: 400px;
+            max-height: 400px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible !important;
+            transform-style: preserve-3d;
+            isolation: isolate;
+        }
+        
+        /* Fix for the component when shiny is toggled */
+        .bg-gray-800.p-4.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700 {
+            overflow: visible !important;
+            min-height: 460px;
+            transition: all 0.3s ease;
+        }
+        
+        .shiny-enabled .bg-gray-800.p-4.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700 {
+            overflow: visible !important;
+            min-height: 460px;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            isolation: isolate;
+        }
+        
+        /* Make visualization consistent */
+        svg {
+            width: 360px;
+            height: 360px;
+            overflow: visible !important;
         }
     </style>
 </head>

@@ -65,7 +65,7 @@
       (str "A circular visualization showing the 26 letters of the alphabet arranged in a circle"
            (when (seq cleaned-word) (str " with the word '" cleaned-word "' highlighted")))]
      
-     ;; Draw outer circle as main orb with class for CSS animation
+     ;; Draw outer circle
      [:circle.main-orb {:cx center-x :cy center-y :r radius 
                :fill "none" :stroke "#8b5cf6" :stroke-width 2
                :aria-hidden "true"}]
@@ -230,12 +230,6 @@
                         :fill "none" :stroke "#8b5cf6" :stroke-width 2
                         :aria-hidden "true"}]
      
-     ;; Draw letters around the circle
-     ;; Add large surrounding circle with purple circumference
-     [:circle.outer-circle {:cx center-x :cy center-y :r (+ letter-radius 30)
-                           :fill "none" :stroke "#a855f7" :stroke-width 2.5
-                           :aria-hidden "true"}]
-     
      ;; Magic decorative elements - lines radiating from center (26-fold pattern)
      (for [i (range 0 360 (/ 360 26))]
        ^{:key (str "ray-" i)}
@@ -361,4 +355,9 @@
             [:circle {:cx (:x intersection) :cy (:y intersection) :r 4
                      :fill "#a855f7"
                      :aria-label (str "Marker for letter " letter)
-                     :aria-hidden "true"}])]))]))
+                     :aria-hidden "true"}])]))
+     
+     ;; Add large surrounding circle with purple circumference (moved to end)
+     [:circle.outer-circle {:cx center-x :cy center-y :r (+ letter-radius 30)
+                           :fill "none" :stroke "#a855f7" :stroke-width 2.5
+                           :aria-hidden "true"}]]))
