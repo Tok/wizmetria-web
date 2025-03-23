@@ -1,7 +1,7 @@
 (ns wizmetria-web.sym-test
   (:require
    [wizmetria-web.sym :as sym]
-   [clojure.test :refer [deftest testing is are]]))
+   [clojure.test :refer [deftest testing is]]))
 
 (deftest wizard-test 
   (testing "WIZARD has A-Z symmetry"
