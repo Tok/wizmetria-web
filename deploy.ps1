@@ -26,6 +26,11 @@ try {
     git checkout -b gh-pages origin/gh-pages
 }
 
+# Remove source files from deployment branch
+Write-Host "Removing source files from deployment branch..." -ForegroundColor Cyan
+git rm -rf src/ 2>$null || true
+git commit -m "Remove source files from deployment branch" --allow-empty
+
 # Create .gitignore to ignore node_modules
 Write-Host "Setting up .gitignore for gh-pages..." -ForegroundColor Cyan
 @"
@@ -147,5 +152,9 @@ if ($stashList -match "Stashed changes before deployment") {
 } else {
     Write-Host "No stashed changes to restore." -ForegroundColor Cyan
 }
+
+# For deploy.ps1 (add after checkout gh-pages)
+git rm -rf src/
+git commit -m "Remove source files from deployment branch"
 
 Write-Host "Deployment complete! Site should update at https://tok.github.io/wizmetria-web/ shortly." -ForegroundColor Green 
