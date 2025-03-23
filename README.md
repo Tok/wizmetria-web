@@ -4,7 +4,13 @@
 [![Language](https://img.shields.io/badge/language-ClojureScript-blue.svg)](https://clojurescript.org/)
 [![Framework](https://img.shields.io/badge/framework-Reagent-orange.svg)](https://reagent-project.github.io/)
 
-[Live Website](https://tok.github.io/wizmetria-web/)
+<div align="center">
+  <h1>
+    <a href="https://tok.github.io/wizmetria-web/" style="font-size: 2em; text-decoration: none; color: #6f42c1;">
+      🔮✨ LIVE WEBSITE: WIZMETRIA ✨🔮
+    </a>
+  </h1>
+</div>
 
 Wizmetria is a web application that detects alphabetical circular symmetry in words. It arranges the alphabet in a circle and checks if a word has symmetry when its letters are connected in sequence.
 
