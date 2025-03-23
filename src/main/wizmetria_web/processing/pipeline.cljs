@@ -25,124 +25,80 @@
 
 ;; -- Event effects for processing pipeline --
 
-;; Define the effect handler function for explicit export
+;; Define the function for explicit export
 (defn process-text-pipeline-fx
+  "Process text and find symmetric words using workers when available"
   [{:keys [text on-state-change on-complete on-error]}]
-    (let [processing-delay (get-in config/processing-config [:processing-delay-ms])
-          start-time (js/Date.now())]
-      (try
-          ;; Report initial state
-          (when on-state-change
-            (on-state-change {:state :processing-text
-                              :progress 0
-                              :elapsed-ms 0}))
+  (try
+    (js/console.log "Starting text processing pipeline with text length:" (count text))
+    
+    ;; Process text first
+    (on-state-change {:state :processing-text
+                      :progress 0})
+    
+    (let [text-result (text-proc/process-text text)
+          unique-words (:unique-words text-result)
+          word-count (:word-count text-result)]
       
-      ;; Start text processing
+      (js/console.log "Text processed, found" word-count "unique words")
+      (on-state-change {:state :extracting-words
+                        :progress 75
+                        :word-count word-count})
+      
+      ;; Process symmetry with or without workers
       (js/setTimeout
        (fn []
-         (try
-           ;; Process text in chunks
-           (when on-state-change
-             (on-state-change {:state :processing-text
-                               :progress 50
-                               :elapsed-ms (- (js/Date.now) start-time)}))
-           
-           (js/setTimeout
-            (fn []
-              (try
-                ;; Extract words
-                (when on-state-change
-                  (on-state-change {:state :extracting-words
-                                    :progress 75
-                                    :elapsed-ms (- (js/Date.now) start-time)}))
+         (on-state-change {:state :finding-symmetry
+                           :progress 80})
+         
+         ;; Use worker-based processing for symmetry
+         (sym-proc/process-symmetry-with-worker 
+          unique-words
+          
+          ;; Progress callback
+          (fn [progress-info]
+            (js/console.log "Symmetry progress:" (clj->js progress-info))
+            (on-state-change (merge progress-info
+                                    {:state :finding-symmetry})))
+          
+          ;; Completion callback  
+          (fn [stats]
+            (js/console.log "Symmetry processing complete, stats:" (clj->js stats))
+            
+            ;; Verify stats structure
+            (if (and stats 
+                     (map? stats)
+                     (:mirror stats)
+                     (:rotation stats))
+              (do
+                (js/console.log "Stats structure looks valid:")
+                (js/console.log "- Mirror count:" (get-in stats [:mirror :count]))
+                (js/console.log "- Rotation count:" (get-in stats [:rotation :count]))
                 
-                (let [text-result (text-proc/process-text text)]
-                  
-                  ;; Update with word count
-                  (when on-state-change
-                    (on-state-change {:state :finding-symmetry
-                                      :progress 80
-                                      :word-count (:word-count text-result)
-                                      :elapsed-ms (- (js/Date.now) start-time)}))
-                  
-                  ;; Start symmetry processing
-                  (js/setTimeout
-                   (fn []
-                     (try
-                       (when on-state-change
-                         (on-state-change {:state :mirror-symmetry
-                                           :progress 85
-                                           :elapsed-ms (- (js/Date.now) start-time)}))
-                       
-                       (js/setTimeout
-                        (fn []
-                          (try
-                            (when on-state-change
-                              (on-state-change {:state :rotational-symmetry
-                                                :progress 90
-                                                :elapsed-ms (- (js/Date.now) start-time)}))
-                            
-                            (js/setTimeout
-                             (fn []
-                               (try
-                                 (when on-state-change
-                                   (on-state-change {:state :calculating-stats
-                                                     :progress 95
-                                                     :elapsed-ms (- (js/Date.now) start-time)}))
-                                 
-                                 ;; Final processing step
-                                 (let [stats (sym-proc/process-symmetry (:unique-words text-result))]
-                                   
-                                   ;; Mark as done
-                                   (when on-state-change
-                                     (on-state-change {:state :done
-                                                       :progress 100
-                                                       :elapsed-ms (- (js/Date.now) start-time)}))
-                                   
-                                   ;; Complete with results
-                                   (when on-complete
-                                     (on-complete (merge text-result {:stats stats}))))
-                                 (catch js/Error err
-                                   (js/console.error "Error in calculating stats:", err)
-                                   (when on-error
-                                     (on-error {:error err
-                                                :error-message "Error calculating statistics"
-                                                :details (.-message err)}))))
-                               processing-delay))
-                            (catch js/Error err
-                              (js/console.error "Error in rotational symmetry:", err)
-                              (when on-error
-                                (on-error {:error err
-                                           :error-message "Error processing rotational symmetry"
-                                           :details (.-message err)}))))
-                        processing-delay))
-                       (catch js/Error err
-                         (js/console.error "Error in mirror symmetry:", err)
-                         (when on-error
-                           (on-error {:error err
-                                      :error-message "Error processing mirror symmetry"
-                                      :details (.-message err)}))))
-                   processing-delay)))
-                (catch js/Error err
-                  (js/console.error "Error extracting words:", err)
-                  (when on-error
-                    (on-error {:error err
-                               :error-message "Error extracting words from text"
-                               :details (.-message err)}))))
-            processing-delay))
-           (catch js/Error err
-             (js/console.error "Error in text processing:", err)
-             (when on-error
-               (on-error {:error err
-                          :error-message "Error processing text"
-                          :details (.-message err)}))))
-       processing-delay))
+                ;; Report completion  
+                (on-state-change {:state :done
+                                  :progress 100})
+                
+                ;; Complete with full results
+                (on-complete (merge text-result {:stats stats})))
+              
+              ;; Handle invalid stats structure
+              (do
+                (js/console.error "Invalid stats structure returned:" (clj->js stats))
+                (on-error {:error-message "Invalid symmetry results"
+                           :details "The worker returned an incomplete or invalid result structure"}))))
+          
+          ;; Error callback
+          (fn [error-info]
+            (js/console.error "Symmetry processing error:" (clj->js error-info))
+            (on-error error-info))))
+       500))
     (catch js/Error err
-      (js/console.error "Error initializing processing pipeline:", err)
+      (js/console.error "Error in text processing:" err)
       (when on-error
         (on-error {:error err
-                   :error-message "Error initializing text processing"
-                   :details (.-message err)}))))))
+                   :error-message "Error processing text"
+                   :details (.-message err)})))))
 
 ;; Register the effect for use in the current namespace
 (rf/reg-fx

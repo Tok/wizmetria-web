@@ -147,12 +147,37 @@
        (js/console.log "Chunked processing complete, result:", (clj->js result))
        (rf/dispatch [:set-wordlist-stats (:stats result)]))}}))
 
-(rf/reg-event-db
+(rf/reg-event-fx
  :set-wordlist-stats
- (fn [db [_ stats]]
-   (assoc db 
-          :wordlist-stats stats
-          :processing-state {:status :complete})))
+ (fn [{:keys [db]} [_ stats]]
+   (js/console.log "Setting wordlist stats:" (clj->js stats))
+   (js/console.log "Mirror stats:" (clj->js (:mirror stats)))
+   (js/console.log "Rotation stats:" (clj->js (:rotation stats)))
+   
+   ;; Debug total counts
+   (when stats
+     (js/console.log "Total words:" (get stats :total-words 0))
+     (js/console.log "Mirror count:" (get-in stats [:mirror :count] 0))
+     (js/console.log "Rotation count:" (get-in stats [:rotation :count] 0))
+     
+     ;; Check if we have any words in the top-n lists
+     (js/console.log "Mirror top-n count:" (count (get-in stats [:mirror :top-n] [])))
+     (js/console.log "Rotation top-n count:" (count (get-in stats [:rotation :top-n] []))))
+   
+   ;; First update the UI with the stats
+   (let [updated-db (assoc db 
+                           :wordlist-stats stats
+                           :processing-state {:status :complete})]
+     
+     ;; Then terminate the worker after a delay
+     (js/setTimeout 
+      (fn [] 
+        (js/console.log "Terminating worker after displaying results")
+        (rf/dispatch-sync [:terminate-worker]))
+      5000)  ;; 5-second delay
+     
+     ;; Return updated db
+     {:db updated-db})))
 
 ;; -- Events for word symmetry --
 
@@ -202,4 +227,17 @@
                                     (when-let [err (:error error-info)]
                                       (.-message err)))})]
      {:db (assoc db :processing-state merged-state)
-      :fx [[:log-error [(:error error-info) merged-state]]]}))) 
+      :fx [[:log-error [(:error error-info) merged-state]]]})))
+
+;; -- Worker cleanup events --
+
+(rf/reg-event-fx
+ :terminate-worker
+ (fn [_ _]
+   {:worker-terminate nil}))
+
+;; Handle application shutdown
+(rf/reg-event-fx
+ :shutdown
+ (fn [{:keys [_db]} _]
+   {:worker-terminate nil})) 

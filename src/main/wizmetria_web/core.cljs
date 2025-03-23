@@ -91,4 +91,8 @@
     (rdomc/render root [main-panel])))
 
 (defn init []
-  (mount-root)) 
+  (mount-root)
+  ;; Add shutdown handler
+  (.addEventListener js/window "beforeunload" 
+                    (fn [_] 
+                      (rf/dispatch-sync [:shutdown])))) 
