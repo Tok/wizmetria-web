@@ -1,12 +1,13 @@
 (ns wizmetria-web.grid
   (:require [wizmetria-web.util :as util]
-            [wizmetria-web.sym :as sym]))
+            [wizmetria-web.sym :as sym]
+            [wizmetria-web.config :as config]))
 
 (def ^:private abc (seq "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
-(def ^:private radius 150)
-(def ^:private center-x 180)
-(def ^:private center-y 180)
-(def ^:private letter-radius 160)
+(def ^:private radius (get-in config/visualization-config [:circle-radius]))
+(def ^:private center-x (get-in config/visualization-config [:center-x]))
+(def ^:private center-y (get-in config/visualization-config [:center-y]))
+(def ^:private letter-radius (get-in config/visualization-config [:letter-radius]))
 
 ;; Helper function to get ordinal value of a letter (A=1, B=2, etc.)
 (defn- ordinal [c]

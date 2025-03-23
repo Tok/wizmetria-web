@@ -4,6 +4,7 @@
             [wizmetria-web.sym :as sym]
             [wizmetria-web.grid :as grid]
             [wizmetria-web.util :as util]
+            [wizmetria-web.config :as config]
             [wizmetria-web.i18n :as i18n :refer [t]]
             [clojure.string :as str]))
 
@@ -38,8 +39,9 @@
  :initialize
  (fn [_ _]
    ;; First create a basic app DB
-   (let [initial-db {:word "WIZARD"
-                     :symmetry-results (sym/evaluate [(sym/clean "WIZARD")])
+   (let [default-word (get-in config/processing-config [:default-word])
+         initial-db {:word default-word
+                     :symmetry-results (sym/evaluate [(sym/clean default-word)])
                      :wordlist-stats nil
                      :processing-state nil
                      :shiny-effects-enabled false}]
@@ -48,11 +50,10 @@
      (js/setTimeout 
       #(do
          (rf/dispatch [:init-language])
-         ;; Initialize the click outside handler for language dropdown after DOM is ready
-         (js/setTimeout i18n/init-click-outside 100))
-      100)
+         (rf/dispatch [:update-word default-word])
+         (rf/dispatch [:check-symmetry]))
+      10)
      
-     ;; Return the initial database
      initial-db)))
 
 (rf/reg-event-db
@@ -101,7 +102,8 @@
 (rf/reg-event-fx
  :prepare-text-processing
  (fn [{:keys [db]} [_ text]]
-   (let [chunks (partition-all 5000 text)
+   (let [chunk-size (get-in config/processing-config [:chunk-size])
+         chunks (partition-all chunk-size text)
          total-chunks (count chunks)]
      {:db (assoc db :processing-state 
                 {:status :processing
@@ -110,7 +112,7 @@
                  :progress 0})
       :fx [[:process-chunk {:text text
                            :chunk-index 0
-                           :chunk-size 5000
+                           :chunk-size chunk-size
                            :total-length (count text)}]]})))
 
 (rf/reg-fx
@@ -119,7 +121,11 @@
    (let [start-idx (* chunk-index chunk-size)
          end-idx (min (+ start-idx chunk-size) total-length)
          finished? (>= end-idx total-length)
-         progress (/ end-idx total-length)]
+         progress (/ end-idx total-length)
+         min-word-length (get-in config/processing-config [:min-word-length])
+         processing-delay (get-in config/processing-config [:processing-delay-ms])
+         calculation-delay (get-in config/processing-config [:symmetry-calculation-delay-ms])
+         top-words-count (get-in config/ui-config [:top-words-to-show])]
      
      (if finished?
        ;; If finished, process the entire text at once
@@ -129,7 +135,7 @@
                       (str/trim)
                       (str/upper-case)
                       (str/split #"\s+"))
-             unique-words (into #{} (filter #(>= (count %) 3) words))
+             unique-words (into #{} (filter #(>= (count %) min-word-length) words))
              
              ;; Update UI that we're finding symmetry
              _ (rf/dispatch [:update-processing-progress 
@@ -173,16 +179,16 @@
                          stats {:total-words total-words
                                 :mirror {:count mirror-count
                                          :by-axis mirror-by-axis-sorted
-                                         :top-10 (take 10 (sort-by (comp - count) mirror-sym-words))}
+                                         :top-10 (take top-words-count (sort-by (comp - count) mirror-sym-words))}
                                 :rotation {:count rotation-count
                                           :words rotation-sorted
-                                          :top-10 (take 10 rotation-sorted)}}]
+                                          :top-10 (take top-words-count rotation-sorted)}}]
                      
                      (rf/dispatch [:update-processing-progress 
                                   {:status :done
                                    :progress 100}])
                      (rf/dispatch [:set-wordlist-stats stats])))
-                30) ;; Short delay for UI to update
+                calculation-delay) ;; Short delay for UI to update
              ]
          nil) ;; No immediate return, async processing
        
@@ -198,7 +204,7 @@
                               :chunk-index (inc chunk-index)
                               :chunk-size chunk-size
                               :total-length total-length}])
-          10)))) ;; Small delay to keep UI responsive
+          processing-delay)))) ;; Small delay to keep UI responsive
    nil))
 
 (rf/reg-event-fx
@@ -339,14 +345,15 @@
        {:on-click #(rf/dispatch [:update-word "REFERS"])} "REFERS"]]]]])
 
 (defn toggle-switch []
-  (let [enabled? @(rf/subscribe [:shiny-effects-enabled])]
-    [:div.relative.inline-block
-     [:button.shiny-toggle-button.flex.items-center.text-sm.bg-indigo-900.hover:bg-indigo-800.transition-colors.px-3.py-2.rounded-md.text-purple-200
-      {:on-click #(do 
-                   (rf/dispatch [:toggle-shiny-effects])
-                   ;; Force re-render to make sure CSS changes are applied
-                   (js/setTimeout 
-                    (fn [] 
+  (let [enabled? @(rf/subscribe [:shiny-effects-enabled])
+        toggle-delay (get-in config/ui-config [:toggle-effects-delay-ms])]
+    [:div.shiny-toggle-button.bg-gray-900.rounded-lg.px-2.h-10.flex.items-center.shadow-md.border.border-purple-700
+     [:button.flex.items-center.focus:outline-none.text-sm.text-white
+      {:on-click (fn [_]
+                    (rf/dispatch [:toggle-shiny-effects])
+                    ;; Brief timeout to allow state to update before modifying DOM
+                    (js/setTimeout 
+                     (fn [] 
                       (let [body (.-body js/document)
                             currently-enabled? (not enabled?)] ;; Toggle happens after click
                         (when body
@@ -355,7 +362,7 @@
                           ;; Then add if it should be enabled
                           (when currently-enabled?
                             (.add (.-classList body) "shiny-enabled"))))) 
-                    10))}
+                    toggle-delay))}
       [:span.mr-2 (t (if enabled? :effects-on :effects-off))]
       [:div.relative.inline-flex.items-center.h-5.w-9.rounded-full.transition-colors.duration-200.ease-in-out
        {:class (if enabled? "bg-purple-600" "bg-gray-600")}
