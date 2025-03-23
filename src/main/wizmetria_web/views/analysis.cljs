@@ -21,43 +21,79 @@
        :reading
        [:div
         [:div.text-sm.text-gray-400.mb-1 
-         (str (t :reading-status) (when-let [name (:file-name processing-state)] (str ": " name)))]
+         (str (t :reading-status) 
+              (when-let [name (:file-name processing-state)] (str ": " name))
+              (when (> (:progress processing-state) 0)
+                (str " (" (.toFixed (:progress processing-state) 1) "%)")))
+         ;; Add a small spinner for better visual feedback
+         [:span.ml-2.inline-block
+          [:svg.animate-spin.h-3.w-3.text-indigo-500 
+           {:xmlns "http://www.w3.org/2000/svg" :fill "none" :viewBox "0 0 24 24"}
+           [:circle.opacity-25 {:cx "12" :cy "12" :r "10" :stroke "currentColor" :stroke-width "4"}]
+           [:path.opacity-75 {:fill "currentColor" 
+                           :d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"}]]]]
         [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
-         [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+         [:div.bg-indigo-500.h-2.transition-all.duration-300.ease-out
           {:style {:width (str (:progress processing-state) "%")}}]]]
        
        :processing
        [:div
-        [:div.text-sm.text-gray-400.mb-1 
-         (str (t :processing-text-status) ": " 
-              (:processed-chunks processing-state) 
-              "/" 
-              (:total-chunks processing-state) 
-              " chunks")]
+        [:div.text-sm.text-gray-400.mb-1.flex.justify-between
+         [:span
+          (str (t :processing-text-status) ": " 
+               (:processed-chunks processing-state) 
+               "/" 
+               (:total-chunks processing-state) 
+               " chunks")]
+         [:span
+          ;; Add percentage display
+          (when (:progress processing-state)
+            (str (.toFixed (:progress processing-state) 1) "%"))]]
         [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
-         [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+         [:div.bg-indigo-500.h-2.transition-all.duration-300.ease-out
           {:style {:width (str (:progress processing-state) "%")}}]]]
        
        :finding-symmetry
        [:div
-        [:div.text-sm.text-gray-400.mb-1 
-         (str (t :finding-symmetry) " " (:word-count processing-state) " words")]
+        [:div.text-sm.text-gray-400.mb-1.flex.justify-between
+         [:span (str (t :finding-symmetry) " " (:word-count processing-state) " words")]
+         ;; Add a small spinner for better visual feedback
+         [:span.ml-2.inline-block
+          [:svg.animate-spin.h-3.w-3.text-indigo-500 
+           {:xmlns "http://www.w3.org/2000/svg" :fill "none" :viewBox "0 0 24 24"}
+           [:circle.opacity-25 {:cx "12" :cy "12" :r "10" :stroke "currentColor" :stroke-width "4"}]
+           [:path.opacity-75 {:fill "currentColor" 
+                           :d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"}]]]]
         [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
-         [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+         [:div.bg-indigo-500.h-2.transition-all.duration-300.ease-out
           {:style {:width (str (:progress processing-state) "%")}}]]]
        
        :mirror-symmetry
        [:div
-        [:div.text-sm.text-gray-400.mb-1 (str (t :finding-symmetry) " " (t :mirror-symmetry))]
+        [:div.text-sm.text-gray-400.mb-1.flex.justify-between
+         [:span (str (t :finding-symmetry) " " (t :mirror-symmetry))]
+         [:span.ml-2.inline-block
+          [:svg.animate-spin.h-3.w-3.text-indigo-500 
+           {:xmlns "http://www.w3.org/2000/svg" :fill "none" :viewBox "0 0 24 24"}
+           [:circle.opacity-25 {:cx "12" :cy "12" :r "10" :stroke "currentColor" :stroke-width "4"}]
+           [:path.opacity-75 {:fill "currentColor" 
+                           :d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"}]]]]
         [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
-         [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+         [:div.bg-indigo-500.h-2.transition-all.duration-300.ease-out
           {:style {:width (str (:progress processing-state) "%")}}]]]
        
        :rotational-symmetry
        [:div
-        [:div.text-sm.text-gray-400.mb-1 (str (t :finding-symmetry) " " (t :rotation-symmetry))]
+        [:div.text-sm.text-gray-400.mb-1.flex.justify-between
+         [:span (str (t :finding-symmetry) " " (t :rotation-symmetry))]
+         [:span.ml-2.inline-block
+          [:svg.animate-spin.h-3.w-3.text-indigo-500 
+           {:xmlns "http://www.w3.org/2000/svg" :fill "none" :viewBox "0 0 24 24"}
+           [:circle.opacity-25 {:cx "12" :cy "12" :r "10" :stroke "currentColor" :stroke-width "4"}]
+           [:path.opacity-75 {:fill "currentColor" 
+                           :d "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"}]]]]
         [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
-         [:div.bg-indigo-500.h-2.transition-all.duration-500.ease-out
+         [:div.bg-indigo-500.h-2.transition-all.duration-300.ease-out
           {:style {:width (str (:progress processing-state) "%")}}]]]
        
        :done

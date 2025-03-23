@@ -84,18 +84,31 @@
  (fn [{:keys [text on-chunk-processed on-complete]}]
    (let [chunk-size (get-in config/processing-config [:chunk-size])
          processing-delay (get-in config/processing-config [:processing-delay-ms])
-         chunks (partition-all chunk-size text)
+         total-length (count text)
+         ;; Calculate an appropriate number of chunks for better progress visibility
+         ;; Ensure we have at least 10 progress updates for better visual feedback
+         adjusted-chunk-size (max 100 (min chunk-size (Math/ceil (/ total-length 10))))
+         chunks (partition-all adjusted-chunk-size text)
          total-chunks (count chunks)
+         start-time (js/Date.now())
          process-chunk (fn process-chunk [chunk-index]
-                         (let [start-idx (* chunk-index chunk-size)
-                               end-idx (min (+ start-idx chunk-size) (count text))
-                               progress (/ end-idx (count text))
-                               finished? (>= end-idx (count text))]
+                         (let [start-idx (* chunk-index adjusted-chunk-size)
+                               end-idx (min (+ start-idx adjusted-chunk-size) total-length)
+                               progress (/ end-idx total-length)
+                               elapsed (- (js/Date.now) start-time)
+                               current-speed (if (> elapsed 0)
+                                               (/ (* chunk-index adjusted-chunk-size) elapsed)
+                                               0)
+                               finished? (>= end-idx total-length)]
                            
-                           ;; Report progress
+                           ;; Report progress with more detailed info
                            (when on-chunk-processed
                              (on-chunk-processed {:processed-chunks (inc chunk-index)
                                                   :total-chunks total-chunks
+                                                  :bytes-processed end-idx
+                                                  :total-bytes total-length
+                                                  :elapsed-ms elapsed
+                                                  :processing-speed current-speed
                                                   :progress (* 100 progress)}))
                            
                            (if finished?

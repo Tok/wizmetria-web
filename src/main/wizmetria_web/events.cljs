@@ -23,14 +23,41 @@
 (rf/reg-fx
  :read-file-async
  (fn [file]
-   (let [reader (js/FileReader.)]
+   (let [reader (js/FileReader.)
+         file-size (.-size file)
+         start-time (js/Date.now())
+         ;; For small files, we'll simulate progress
+         simulate-progress? (< file-size (* 1024 1024))
+         progress-interval (when simulate-progress?
+                             (js/setInterval
+                              (fn []
+                                ;; Calculate artificial progress based on elapsed time
+                                ;; Assuming small files take about 2 seconds max
+                                (let [elapsed (- (js/Date.now) start-time)
+                                      artificial-progress (min 90 (/ (* elapsed 100) 2000))]
+                                  (rf/dispatch [:update-processing-progress
+                                               {:status :reading
+                                                :progress artificial-progress}])))
+                              100))]
      (set! (.-onload reader)
            (fn [e]
-             (let [content (.. e -target -result)]
-               (rf/dispatch [:prepare-text-processing content]))))
+             ;; Clear the interval when the file is fully loaded
+             (when simulate-progress?
+               (js/clearInterval progress-interval))
+             ;; Set progress to 100% explicitly
+             (rf/dispatch [:update-processing-progress
+                          {:status :reading
+                           :progress 100}])
+             ;; Small delay to show 100% before switching to processing
+             (js/setTimeout
+              (fn []
+                (let [content (.. e -target -result)]
+                  (rf/dispatch [:prepare-text-processing content])))
+              200)))
      (set! (.-onprogress reader)
            (fn [e]
-             (when (.-lengthComputable e)
+             ;; For larger files, we still use the real progress
+             (when (and (.-lengthComputable e) (not simulate-progress?))
                (let [progress (/ (.-loaded e) (.-total e))]
                  (rf/dispatch [:update-processing-progress
                               {:status :reading
@@ -73,7 +100,7 @@
           ;; Update to show mirror symmetry processing
           (rf/dispatch [:update-processing-progress 
                        {:status :mirror-symmetry
-                        :progress 0}])
+                        :progress 50}])
           
           ;; Short delay then process symmetry
           (js/setTimeout
