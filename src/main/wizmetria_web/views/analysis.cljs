@@ -41,17 +41,24 @@
         [:div.text-sm.text-gray-400.mb-1.flex.justify-between
          [:span
           (str (t :processing-text-status) ": " 
-               (:processed-chunks processing-state) 
+               (or (:processed-chunks processing-state) "0") 
                "/" 
-               (:total-chunks processing-state) 
+               ;; Handle case where total-chunks might be a string like "calculating..."
+               (let [total (:total-chunks processing-state)]
+                 (if (string? total) 
+                   total 
+                   (or total "?")))
                " chunks")]
          [:span
-          ;; Add percentage display
-          (when (:progress processing-state)
-            (str (.toFixed (:progress processing-state) 1) "%"))]]
-        [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden
-         [:div.bg-indigo-500.h-2.transition-all.duration-300.ease-out
-          {:style {:width (str (:progress processing-state) "%")}}]]]
+          ;; Add percentage display with fallback and ensure it's visible
+          (let [progress (or (:progress processing-state) 0.5)]
+            (str (.toFixed (max 0.5 progress) 1) "%"))]]
+        [:div.w-full.bg-gray-700.rounded-full.h-2.overflow-hidden.relative
+         ;; Add subtle animation for active progress
+         [:div.absolute.inset-0.opacity-30.bg-indigo-800
+          {:class (when (< (or (:progress processing-state) 0) 100) "animate-pulse")}]
+         [:div.bg-indigo-500.h-2.transition-all.duration-300.ease-out.relative
+          {:style {:width (str (max 0.5 (or (:progress processing-state) 0.5)) "%")}}]]]
        
        :finding-symmetry
        [:div

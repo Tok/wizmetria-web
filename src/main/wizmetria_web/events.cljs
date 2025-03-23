@@ -1,7 +1,6 @@
 (ns wizmetria-web.events
   (:require [re-frame.core :as rf]
             [wizmetria-web.config :as config]
-            [wizmetria-web.processing :as processing]
             [wizmetria-web.sym :as sym]))
 
 ;; -- Events for file processing --
@@ -39,21 +38,45 @@
                                                {:status :reading
                                                 :progress artificial-progress}])))
                               100))]
+     
+     ;; Error handling for file reading
+     (set! (.-onerror reader)
+           (fn [e]
+             (when simulate-progress?
+               (js/clearInterval progress-interval))
+             (js/console.error "Error reading file:", e)
+             (rf/dispatch [:update-processing-progress
+                          {:status :error
+                           :error-message "Could not read file"
+                           :details (str "Error: " (.-message e))}])))
+     
      (set! (.-onload reader)
            (fn [e]
              ;; Clear the interval when the file is fully loaded
              (when simulate-progress?
                (js/clearInterval progress-interval))
-             ;; Set progress to 100% explicitly
-             (rf/dispatch [:update-processing-progress
-                          {:status :reading
-                           :progress 100}])
-             ;; Small delay to show 100% before switching to processing
-             (js/setTimeout
-              (fn []
-                (let [content (.. e -target -result)]
-                  (rf/dispatch [:prepare-text-processing content])))
-              200)))
+             
+             ;; Defensive check for null content
+             (let [content (.. e -target -result)]
+               (if (or (nil? content) (empty? content))
+                 ;; Handle empty file
+                 (rf/dispatch [:update-processing-progress
+                              {:status :error
+                               :error-message "Empty file"
+                               :details "The file appears to be empty"}])
+                 
+                 (do
+                   ;; Set progress to 100% explicitly
+                   (rf/dispatch [:update-processing-progress
+                                {:status :reading
+                                 :progress 100}])
+                   
+                   ;; Small delay to show 100% before switching to processing
+                   (js/setTimeout
+                    (fn []
+                      (rf/dispatch [:prepare-text-processing content]))
+                    200))))))
+     
      (set! (.-onprogress reader)
            (fn [e]
              ;; For larger files, we still use the real progress
@@ -62,7 +85,16 @@
                  (rf/dispatch [:update-processing-progress
                               {:status :reading
                                :progress (* 100 progress)}])))))
-     (.readAsText reader file))))
+     
+     ;; Start reading the file
+     (try
+       (.readAsText reader file)
+       (catch js/Error err
+         (js/console.error "Exception reading file:", err)
+         (rf/dispatch [:update-processing-progress
+                      {:status :error
+                       :error-message "File reading failed"
+                       :details (.-message err)}]))))))
 
 (rf/reg-fx
  :log-error
@@ -77,10 +109,16 @@
 (rf/reg-event-fx
  :prepare-text-processing
  (fn [{:keys [db]} [_ text]]
+   ;; Initiate processing with small delay to ensure reading progress is shown
    {:db (assoc db :processing-state 
-              {:status :processing
-               :progress 0})
-    :process-text-chunks 
+               {:status :processing
+                :progress 0.1})
+    :fx [[:dispatch-later {:ms 100 :dispatch [:execute-text-processing text]}]]}))
+
+(rf/reg-event-fx
+ :execute-text-processing
+ (fn [{:keys [_db]} [_ text]]
+   {:process-text-chunks 
     {:text text
      :on-chunk-processed 
      (fn [progress-data]
