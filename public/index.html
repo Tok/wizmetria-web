@@ -69,6 +69,8 @@
         
         .shiny-enabled .alphabet-circle {
             position: relative;
+            overflow: visible !important;
+            z-index: 1;
         }
         
         .shiny-enabled .alphabet-circle::before {
@@ -244,7 +246,7 @@
         /* Glowing background effects for panels when shiny is enabled */
         .shiny-enabled .bg-gray-800 {
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3), 0 0 15px rgba(139, 92, 246, 0.15);
             transition: all 0.3s ease;
         }
@@ -260,6 +262,7 @@
             opacity: 0.6;
             z-index: 0;
             pointer-events: none;
+            border-radius: inherit;
         }
         
         .shiny-enabled .bg-gray-800:hover {
@@ -305,10 +308,6 @@
         }
         
         /* Special glowing effect for the alphabet circle */
-        .shiny-enabled .alphabet-circle {
-            position: relative;
-        }
-        
         .shiny-enabled .alphabet-circle::after {
             content: '';
             position: absolute;
@@ -422,6 +421,9 @@
         .shiny-enabled .main-orb {
             filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.4));
             animation: pulse-glow 4s infinite alternate ease-in-out;
+            overflow: visible;
+            position: relative;
+            z-index: 2;
         }
         
         @keyframes pulse-glow {
@@ -526,6 +528,71 @@
         
         .shiny-enabled .shiny-toggle-button span.bg-white {
             box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Ensure SVG elements aren't clipped */
+        .shiny-enabled svg {
+            overflow: visible !important;
+        }
+        
+        /* Ensure parent containers of SVGs don't clip content */
+        .shiny-enabled div:has(> svg) {
+            overflow: visible !important;
+        }
+        
+        /* Ensure symmetry container doesn't clip */
+        .shiny-enabled [class*="symmetry-container"],
+        .shiny-enabled [class*="symmetry-display"] {
+            overflow: visible !important;
+        }
+        
+        /* Fix specifically for the symmetry display container */
+        .shiny-enabled .flex.flex-wrap.justify-center.gap-6.w-full.mt-4 > div {
+            overflow: visible !important;
+        }
+        
+        /* Fix for circle container */
+        .shiny-enabled .bg-gray-800.p-4.rounded-lg.shadow-lg.flex.flex-col.items-center.w-80.border.border-indigo-700 {
+            overflow: visible !important;
+            transform-style: preserve-3d;
+            isolation: isolate;
+        }
+        
+        /* Ensure the entire symmetry display area has space for the glow */
+        .shiny-enabled .alphabet-circle.flex.items-center.justify-center.bg-gray-900.rounded-full.p-1 {
+            margin: 10px;
+            overflow: visible !important;
+            transform-style: preserve-3d;
+            isolation: isolate;
+        }
+
+        /* Setting z-index for SVG elements */
+        .shiny-enabled svg {
+            position: relative;
+            z-index: 10;
+            transform-style: preserve-3d;
+        }
+        
+        /* SVG elements stacking order */
+        .shiny-enabled svg > * {
+            transform: translateZ(0);
+        }
+        
+        /* Ensure background effects don't overlap important content */
+        .shiny-enabled .bg-gray-800::before {
+            z-index: -1;
+        }
+        
+        /* Remove box-shadow on hover that might clip elements */
+        .shiny-enabled .bg-gray-800:hover {
+            transform: none;
+        }
+        
+        /* Fix for SVG overflow in Firefox */
+        @-moz-document url-prefix() {
+            .alphabet-circle svg {
+                transform: scale(0.95);
+            }
         }
     </style>
 </head>
