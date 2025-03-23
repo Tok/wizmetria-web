@@ -230,10 +230,11 @@
                         :fill "none" :stroke "#8b5cf6" :stroke-width 2
                         :aria-hidden "true"}]
      
-     ;; Add prominent center circle with purple circumference
-     [:circle.center-circle {:cx center-x :cy center-y :r 3
-                            :fill "#111827" :stroke "#a855f7" :stroke-width 1.5
-                            :aria-hidden "true"}]
+     ;; Draw letters around the circle
+     ;; Add large surrounding circle with purple circumference
+     [:circle.outer-circle {:cx center-x :cy center-y :r (+ letter-radius 30)
+                           :fill "none" :stroke "#a855f7" :stroke-width 2.5
+                           :aria-hidden "true"}]
      
      ;; Magic decorative elements - lines radiating from center (26-fold pattern)
      (for [i (range 0 360 (/ 360 26))]
