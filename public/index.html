@@ -426,6 +426,37 @@
             z-index: 2;
         }
         
+        /* Center circle styling */
+        .shiny-enabled svg circle[cx="180"][cy="180"][r="3"],
+        .shiny-enabled svg circle[cx="200"][cy="200"][r="3"],
+        .shiny-enabled svg circle.center-circle {
+            r: 6 !important;
+            fill: #111827 !important;
+            stroke: #a855f7 !important;
+            stroke-width: 2 !important;
+            filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.7)) !important;
+        }
+        
+        /* Add a pulsing glow to the center circle */
+        @keyframes centerPulse {
+            0% { 
+                stroke-width: 2;
+                stroke-opacity: 0.7;
+                filter: drop-shadow(0 0 5px rgba(139, 92, 246, 0.4));
+            }
+            100% { 
+                stroke-width: 2.5;
+                stroke-opacity: 1;
+                filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.8));
+            }
+        }
+        
+        .shiny-enabled svg circle[cx="180"][cy="180"][r="3"],
+        .shiny-enabled svg circle[cx="200"][cy="200"][r="3"],
+        .shiny-enabled svg circle.center-circle {
+            animation: centerPulse 3s infinite alternate ease-in-out;
+        }
+        
         @keyframes pulse-glow {
             0% { 
                 stroke-width: 2;
