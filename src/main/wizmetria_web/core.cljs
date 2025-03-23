@@ -203,7 +203,7 @@
 
 (rf/reg-event-fx
  :process-next-chunk
- (fn [{:keys [db]} [_ params]]
+ (fn [{:keys [__]} [_ params]]
    {:fx [[:process-chunk params]]}))
 
 (rf/reg-event-db

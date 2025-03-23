@@ -100,14 +100,6 @@
         (for [sum (range 1 53)
               :when (sym? w sum)]
           (sum->id sum))))))
-                  
-(defn- get-axis-id-for-name [target-name]
-  "Helper function to find the axis ID that produces a specific axis name"
-  (loop [id 0]
-    (cond
-      (>= id 26) nil  ;; Not found
-      (= (id->axis-name id) target-name) id
-      :else (recur (inc id)))))
 
 (defn rotation-symmetry-axis-id-for-word [word]
   ;; For rotation symmetry, letters pair with others 13 positions away

@@ -1,7 +1,5 @@
 (ns wizmetria-web.grid
-  (:require [reagent.core :as r]
-            [clojure.string :as str]
-            [wizmetria-web.util :as util]
+  (:require [wizmetria-web.util :as util]
             [wizmetria-web.sym :as sym]))
 
 (def ^:private abc (seq "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
@@ -47,8 +45,7 @@
   (mapv letter-position (range 26)))
 
 ;; -- Helper functions for angle calculations --
-(defn- radians [deg]
-  "Convert degrees to radians"
+(defn- deg->rad [deg]
   (* deg (/ Math/PI 180)))
 
 ;; Draw the letter circle and lines connecting the letters in the word
@@ -75,8 +72,8 @@
        ^{:key (str "ray-" i)}
        [:line {:x1 center-x 
               :y1 center-y 
-              :x2 (+ center-x (* radius (Math/cos (radians i))))
-              :y2 (+ center-y (* radius (Math/sin (radians i))))
+              :x2 (+ center-x (* radius (Math/cos (deg->rad i))))
+              :y2 (+ center-y (* radius (Math/sin (deg->rad i))))
               :stroke "rgba(139, 92, 246, 0.1)"
               :stroke-width 1}])
      
@@ -145,8 +142,8 @@
        ^{:key (str "ray-" i)}
        [:line {:x1 center-x 
               :y1 center-y 
-              :x2 (+ center-x (* radius (Math/cos (radians i))))
-              :y2 (+ center-y (* radius (Math/sin (radians i))))
+              :x2 (+ center-x (* radius (Math/cos (deg->rad i))))
+              :y2 (+ center-y (* radius (Math/sin (deg->rad i))))
               :stroke "rgba(139, 92, 246, 0.1)"
               :stroke-width 1}])
      
@@ -202,7 +199,7 @@
                                              ord2 (ordinal c2)]
                                        :when (= (mod (+ ord1 ord2) 26) (mod (+ axis-id 2) 26))]
                                    [c1 c2 i j])]
-                        (filter (fn [[c1 c2 i j]] 
+                        (filter (fn [[_ __ i j]] 
                                   ;; Filter out adjacent letters that are just part of the word sequence
                                   (not= (Math/abs (- i j)) 1))
                                 pairs)))
@@ -235,8 +232,8 @@
        ^{:key (str "ray-" i)}
        [:line {:x1 center-x 
                :y1 center-y 
-               :x2 (+ center-x (* radius (Math/cos (radians i))))
-               :y2 (+ center-y (* radius (Math/sin (radians i))))
+               :x2 (+ center-x (* radius (Math/cos (deg->rad i))))
+               :y2 (+ center-y (* radius (Math/sin (deg->rad i))))
                :stroke "rgba(139, 92, 246, 0.1)"
                :stroke-width 1}])
      

@@ -1,7 +1,5 @@
 (ns wizmetria-web.i18n
-  (:require [reagent.core :as r]
-            [re-frame.core :as rf]
-            [clojure.string :as str]))
+  (:require [re-frame.core :as rf]))
 
 ;; Define supported languages
 (def supported-languages
