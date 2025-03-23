@@ -10,12 +10,14 @@
    (try
      {:db (assoc db :processing-state {:status :reading 
                                        :file-name (.-name file)
+                                       :file-obj file  ;; Store file object for possible retry
                                        :progress 0})
       :fx [[:read-file-async file]]}
      (catch js/Error e
        {:db (assoc db :processing-state {:status :error 
                                          :error-message "Could not process file"
-                                         :details (.-message e)})
+                                         :details (.-message e)
+                                         :file-obj file}) ;; Store file even on error
         :fx [[:log-error e]]}))))
 
 (rf/reg-fx
@@ -109,7 +111,8 @@
  :prepare-text-processing
  (fn [{:keys [db]} [_ text]]
    (js/console.log "Starting text processing with text length:" (count text))
-   {:db db
+   {:db (assoc db :processing-state {:status :processing
+                                    :file-obj (:file-obj db)})
     :process-text-pipeline
     {:text text
      :on-state-change
@@ -120,13 +123,18 @@
      :on-complete
      (fn [result]
        (js/console.log "Processing complete, result:", (clj->js result))
-       (rf/dispatch [:set-wordlist-stats (:stats result)]))}}))
+       (rf/dispatch [:set-wordlist-stats (:stats result)]))
+     :on-error
+     (fn [error-info]
+       (js/console.error "Processing error:", (clj->js error-info))
+       (rf/dispatch [:handle-processing-error error-info]))}}))
 
 (rf/reg-event-fx
  :execute-text-processing
  (fn [{:keys [db]} [_ text]]
    (js/console.log "Starting chunked text processing with text length:" (count text))
-   {:db db
+   {:db (assoc db :processing-state {:status :processing
+                                    :file-obj (:file-obj db)})
     :process-text-chunks
     {:text text
      :on-progress
@@ -166,4 +174,32 @@
 (rf/reg-event-db
  :toggle-shiny-effects
  (fn [db _]
-   (update db :shiny-effects-enabled not))) 
+   (update db :shiny-effects-enabled not)))
+
+;; -- Error handling events --
+
+(rf/reg-event-db
+ :clear-processing-error
+ (fn [db _]
+   (update db :processing-state dissoc :error-message :details :status)))
+
+(rf/reg-event-fx
+ :log-error
+ (fn [_ [_ error context]]
+   (js/console.error "Application error:", error, "Context:", (clj->js context))
+   nil))
+
+(rf/reg-event-fx
+ :handle-processing-error
+ (fn [{:keys [db]} [_ error-info]]
+   (let [current-state (get db :processing-state {})
+         merged-state (merge
+                       current-state
+                       {:status :error
+                        :error-message (or (:error-message error-info) 
+                                          "An error occurred during processing")
+                        :details (or (:details error-info) 
+                                    (when-let [err (:error error-info)]
+                                      (.-message err)))})]
+     {:db (assoc db :processing-state merged-state)
+      :fx [[:log-error [(:error error-info) merged-state]]]}))) 

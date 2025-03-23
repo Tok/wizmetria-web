@@ -1,6 +1,7 @@
 (ns wizmetria-web.views.analysis
   (:require [re-frame.core :as rf]
-            [wizmetria-web.i18n :refer [t]]))
+            [wizmetria-web.i18n :refer [t]]
+            [wizmetria-web.views.error :as error]))
 
 ;; -- File upload button component --
 (defn file-upload-button []
@@ -123,7 +124,8 @@
 
 ;; -- Text analysis component --
 (defn text-analysis []
-  (let [processing-state @(rf/subscribe [:processing-state])]
+  (let [processing-state @(rf/subscribe [:processing-state])
+        wordlist-stats @(rf/subscribe [:wordlist-stats])]
     [:div.bg-gray-800.p-4.rounded-lg.shadow-lg.border.border-purple-700.text-gray-200.mt-8
      [:div.flex.justify-between.items-center
       [:h3.text-xl.text-purple-300.font-semibold (t :text-analysis-title)]
@@ -139,5 +141,26 @@
      
      [:p.text-sm.text-gray-300.mt-2.mb-4 (t :text-analysis-description)]
      
+     ;; Show error component if there's an error
+     [error/processing-error]
+     
      ;; Progress indicator
-     [processing-progress-indicator processing-state]])) 
+     (cond
+       ;; Currently processing - show progress
+       (#{:reading :processing :finding-symmetry 
+          :mirror-symmetry :rotational-symmetry :calculating-stats}
+        (:status processing-state))
+       [processing-progress-indicator processing-state]
+       
+       ;; Processing complete with stats - show message
+       (and (= :complete (:status processing-state)) wordlist-stats)
+       [:div.text-purple-300.text-lg.mt-4
+        (str "Analyzed " (:total-words wordlist-stats) " words from your file")]
+       
+       ;; Done with processing - show message
+       (= :done (:status processing-state))
+       [:div.text-green-300.text-lg.mt-4
+        "Processing complete! Results displayed below."]
+       
+       ;; No processing state - don't show anything extra
+       :else nil)])) 
