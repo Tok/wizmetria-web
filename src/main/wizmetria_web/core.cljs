@@ -1,8 +1,10 @@
 (ns wizmetria-web.core
   (:require [reagent.dom.client :as rdomc]
             [re-frame.core :as rf]
+            [re-frame.db :as re-frame-db]
             [wizmetria-web.config :as config]
             [wizmetria-web.events]
+            [wizmetria-web.processing]
             [wizmetria-web.processing-simple]
             [wizmetria-web.views.layout :as layout]
             [wizmetria-web.views.symmetry :as symmetry]
@@ -78,9 +80,10 @@
 (defn mount-root []
   (rf/dispatch-sync [:initialize])
   
-  ;; Apply initial shiny effects to body ONLY if enabled in app state
-  (let [shiny-enabled? @(rf/subscribe [:shiny-effects-enabled])
-        body (.-body js/document)]
+  ;; Get shiny-effects-enabled from app-db directly instead of using subscribe
+  (let [body (.-body js/document)
+        app-db @re-frame-db/app-db ;; Use the properly required namespace
+        shiny-enabled? (get app-db :shiny-effects-enabled false)]
     (when (and body shiny-enabled?)
       (.add (.-classList body) "shiny-enabled")))
   
