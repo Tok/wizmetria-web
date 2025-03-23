@@ -1,6 +1,6 @@
 {
   "name": "wizmetria-web",
-  "version": "0.0.1",
+  "version": "0.7.7",
   "private": true,
   "scripts": {
     "dev": "shadow-cljs watch app",
