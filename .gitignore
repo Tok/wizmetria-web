@@ -1,5 +1,3 @@
 ﻿node_modules/
 .shadow-cljs/
 public/
-_*_temp/
-out/
