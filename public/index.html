@@ -525,6 +525,7 @@
         .shiny-enabled .language-selector-button {
             position: relative;
             overflow: hidden;
+            padding: 0 12px;
         }
         
         .shiny-enabled .language-selector-button::after {
@@ -539,6 +540,10 @@
             z-index: -1;
             filter: blur(8px);
             opacity: 0.7;
+        }
+        
+        .language-selector-button span {
+            margin: 0 4px;
         }
         
         /* Language dropdown glow */
@@ -709,6 +714,33 @@
             width: 360px;
             height: 360px;
             overflow: visible !important;
+        }
+        
+        /* App title styling */
+        .app-title {
+            letter-spacing: 0.05em;
+            font-family: 'Courier New', monospace;
+            font-weight: 800;
+            background: linear-gradient(135deg, #a855f7 0%, #8b5cf6 50%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+        
+        .shiny-enabled .app-title {
+            animation: titleGlow 3s infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            0% {
+                text-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
+                transform: scale(1);
+            }
+            100% {
+                text-shadow: 0 0 16px rgba(168, 85, 247, 0.7), 0 0 30px rgba(139, 92, 246, 0.4);
+                transform: scale(1.02);
+            }
         }
     </style>
 </head>

@@ -533,13 +533,17 @@
      [:div.flex-grow.px-4.py-6.flex.flex-col.items-center
       [:div.flex.items-center.justify-between.w-full.max-w-5xl.px-2.py-2
        [:div.flex.items-center
-        [:h1.text-3xl.text-purple-300.font-bold.tracking-wider.mr-4
-         {:style (when shiny-enabled? 
-                   {:text-shadow "0 0 10px rgba(139, 92, 246, 0.5), 0 0 20px rgba(139, 92, 246, 0.3)"})} 
+        [:h1.text-5xl.text-purple-300.font-bold.tracking-wider.mr-4.app-title
+         {:style (merge
+                  {:font-family "'Courier New', monospace"}
+                  (when shiny-enabled? 
+                    {:text-shadow "0 0 12px rgba(139, 92, 246, 0.5), 0 0 24px rgba(139, 92, 246, 0.3)"}))} 
          (t :app-title)]
         [:h2.text-xl.text-indigo-300.font-light.hidden.sm:block
-         {:style (when shiny-enabled? 
-                   {:text-shadow "0 0 5px rgba(99, 102, 241, 0.3)"})}
+         {:style (merge
+                  {:font-family "'Courier New', monospace"}
+                  (when shiny-enabled? 
+                    {:text-shadow "0 0 5px rgba(99, 102, 241, 0.3)"}))}
          (t :app-subtitle)]]
        [:div.controls-container.flex.items-center.space-x-2
         {:class (when rtl? "rtl space-x-reverse")}
