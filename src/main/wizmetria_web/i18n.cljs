@@ -548,7 +548,7 @@
 (defn language-selector []
   (let [current-lang @(rf/subscribe [:current-language])]
     [:div.relative.inline-block.text-left
-     [:div.p-2.mt-4.rounded-md.bg-indigo-900.hover:bg-indigo-800.transition-colors
+     [:div.p-2.rounded-md.bg-indigo-900.hover:bg-indigo-800.transition-colors
       [:button.language-selector-button.flex.items-center.text-sm.text-purple-200.focus:outline-none
        {:on-click #(do 
                      (js/console.log "Language button clicked")
@@ -557,9 +557,12 @@
        [:svg.w-4.h-4.ml-2.text-purple-300 {:xmlns "http://www.w3.org/2000/svg" :viewBox "0 0 20 20" :fill "currentColor"}
         [:path {:fill-rule "evenodd" :d "M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" :clip-rule "evenodd"}]]]]
      
-     ;; Language dropdown
-     [:div#language-dropdown.absolute.right-0.mt-2.w-48.rounded-md.shadow-lg.bg-gray-800.ring-1.ring-black.ring-opacity-5.focus:outline-none.z-10
-      {:class (if @(rf/subscribe [:language-dropdown-open]) "block" "hidden")}
+     ;; Language dropdown - positioned absolutely to not push content
+     [:div#language-dropdown.absolute.right-0.mt-1.w-48.rounded-md.shadow-lg.bg-gray-800.ring-1.ring-black.ring-opacity-5.focus:outline-none.z-50
+      {:class (if @(rf/subscribe [:language-dropdown-open]) "block" "hidden")
+       :style {:position "absolute" 
+               :top "100%" 
+               :right "0"}}
       [:div.py-1
        (for [[lang-key lang-data] supported-languages]
          ^{:key lang-key}
