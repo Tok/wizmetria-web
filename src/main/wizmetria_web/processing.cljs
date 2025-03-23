@@ -146,7 +146,6 @@
                                          100))
                                       
                                       ;; Process this chunk then schedule next
-                                      (do
                                         (try
                                           ;; Get the chunk and process it
                                           (let [chunk (nth chunks current-chunk)
@@ -183,7 +182,7 @@
                                             (js/console.error "Error processing chunk" current-chunk ":", err)
                                             ;; Try to continue with next chunk despite error
                                             (swap! processed-chunks inc)
-                                            (js/setTimeout process-next-chunk processing-delay)))))))]
+                                            (js/setTimeout process-next-chunk processing-delay))))))]
                             
                             ;; Start the processing chain
                             (js/setTimeout chunk-processor 50)))]
@@ -197,4 +196,4 @@
            (on-complete (process-text ""))))
        
        ;; Start the processing chain for normal text
-       (process-chunks))))) 
+       (process-chunks)))))

@@ -1,7 +1,6 @@
 (ns wizmetria-web.events
   (:require [re-frame.core :as rf]
             [wizmetria-web.config :as config]
-            [wizmetria-web.processing :refer [extract-words process-text]]
             [wizmetria-web.sym :as sym]))
 
 ;; -- Events for file processing --
@@ -110,85 +109,56 @@
 (rf/reg-event-fx
  :prepare-text-processing
  (fn [{:keys [db]} [_ text]]
-   (let [chunk-size (get-in config/processing-config [:chunk-size])
-         total-length (count text)
-         chunks (partition-all chunk-size text)
-         total-chunks (count chunks)]
-     {:db (assoc db :processing-state 
-                {:status :processing
-                 :total-chunks total-chunks
-                 :processed-chunks 0
-                 :progress 0})
-      :fx [[:process-chunk {:text text
-                           :chunk-index 0
-                           :chunk-size chunk-size
-                           :total-length total-length}]]})))
-
-(rf/reg-fx
- :process-chunk
- (fn [{:keys [text chunk-index chunk-size total-length]}]
-   (let [start-idx (* chunk-index chunk-size)
-         end-idx (min (+ start-idx chunk-size) total-length)
-         finished? (>= end-idx total-length)
-         progress (/ end-idx total-length)]
-     
-     (if finished?
-       ;; If finished, process the entire text at once
-       (let [min-word-length (get-in config/processing-config [:min-word-length])
-             unique-words (extract-words text min-word-length)
-             
-             ;; Update UI that we're finding symmetry
-             _ (rf/dispatch [:update-processing-progress 
-                            {:status :finding-symmetry
-                             :progress 0
-                             :word-count (count unique-words)}])
-             
-             ;; Find symmetry (time-consuming part) with short delay for UI
-             _ (js/setTimeout 
-                #(do
-                   ;; First stage - mirror symmetry
-                   (rf/dispatch [:update-processing-progress 
-                                {:status :mirror-symmetry
-                                 :progress 50}])
-                   
-                   ;; Short delay for UI, then process symmetry
-                   (js/setTimeout
-                    (fn []
-                      (let [calculation-delay (get-in config/processing-config [:symmetry-calculation-delay-ms])]
-                        ;; This is where the heavy calculation happens
-                        (js/setTimeout
-                         (fn []
-                           (let [result (process-text text)
-                                 stats ((:process-symmetry result))]
-                             (rf/dispatch [:update-processing-progress 
-                                          {:status :done
-                                           :progress 100}])
-                             (rf/dispatch [:set-wordlist-stats stats])))
-                         calculation-delay)))
-                    10))
-                30) ;; Short delay for UI to update
-             ]
-         nil) ;; No immediate return, async processing
-       
-       ;; Process the next chunk
-       (do
-         (rf/dispatch [:update-processing-progress 
-                      {:status :processing
-                       :processed-chunks (inc chunk-index)
-                       :progress (* 100 progress)}])
-         (js/setTimeout 
-          #(rf/dispatch-sync [:process-next-chunk 
-                             {:text text
-                              :chunk-index (inc chunk-index)
-                              :chunk-size chunk-size
-                              :total-length total-length}])
-          10)))) ;; Small delay to keep UI responsive
-   nil))
+   ;; Use the simplified processing approach that was working before
+   (js/console.log "Using simple processing method")
+   (rf/dispatch [:prepare-text-processing-simple text])
+   {:db db}))
 
 (rf/reg-event-fx
- :process-next-chunk
- (fn [{:keys [_]} [_ params]]
-   {:fx [[:process-chunk params]]}))
+ :execute-text-processing
+ (fn [{:keys [_db]} [_ text]]
+   (js/console.log "Starting execute-text-processing with text length:" (count text))
+   {:process-text-chunks 
+    {:text text
+     :on-chunk-processed 
+     (fn [progress-data]
+       (js/console.log "Chunk processed:", (clj->js progress-data))
+       (rf/dispatch [:update-processing-progress
+                    (assoc progress-data :status :processing)]))
+     :on-complete
+     (fn [result]
+       (js/console.log "Text processing complete, result:" (clj->js result))
+       ;; First update to show we're finding symmetry
+       (rf/dispatch [:update-processing-progress 
+                    {:status :finding-symmetry
+                     :progress 0
+                     :word-count (:word-count result)}])
+       
+       ;; Small delay for UI update before heavy processing
+       (js/setTimeout 
+        (fn []
+          ;; Update to show mirror symmetry processing
+          (rf/dispatch [:update-processing-progress 
+                       {:status :mirror-symmetry
+                        :progress 50}])
+          
+          ;; Short delay then process symmetry
+          (js/setTimeout
+           (fn []
+             (let [calculation-delay (get-in config/processing-config [:symmetry-calculation-delay-ms])]
+               ;; This is where the heavy calculation happens
+               (js/setTimeout
+                (fn []
+                  (js/console.log "Starting symmetry calculation")
+                  (let [stats ((:process-symmetry result))]
+                    (js/console.log "Symmetry calculation complete, found stats:" (clj->js stats))
+                    (rf/dispatch [:update-processing-progress 
+                                 {:status :done
+                                  :progress 100}])
+                    (rf/dispatch [:set-wordlist-stats stats])))
+                calculation-delay)))
+           10))
+        10))}}))
 
 (rf/reg-event-db
  :set-wordlist-stats

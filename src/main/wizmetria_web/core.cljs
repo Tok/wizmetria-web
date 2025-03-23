@@ -3,7 +3,7 @@
             [re-frame.core :as rf]
             [wizmetria-web.config :as config]
             [wizmetria-web.events]
-            [wizmetria-web.i18n :as i18n]
+            [wizmetria-web.processing-simple]
             [wizmetria-web.views.layout :as layout]
             [wizmetria-web.views.symmetry :as symmetry]
             [wizmetria-web.views.analysis :as analysis]
@@ -61,8 +61,7 @@
 ;; -- Main panel view --
 (defn main-panel []
   (let [text-direction @(rf/subscribe [:text-direction])
-        shiny-enabled? @(rf/subscribe [:shiny-effects-enabled])
-        rtl? (= text-direction "rtl")]
+        shiny-enabled? @(rf/subscribe [:shiny-effects-enabled])]
     [:div.min-h-screen.bg-gray-900.text-purple-100.flex.flex-col
      {:dir text-direction
       :class (when shiny-enabled? "shiny-enabled")}

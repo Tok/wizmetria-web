@@ -79,4 +79,4 @@
               has-mirror-symmetry word-axis-id
               has-rotation-symmetry rotation-axis-id
               :else nil)
-            (or has-mirror-symmetry has-rotation-symmetry)]]]]])]))) 
+            (or has-mirror-symmetry has-rotation-symmetry)]]]]])])) 

@@ -4,8 +4,8 @@
 (def processing-config
   {:chunk-size 5000                            ;; Number of characters to process in each chunk
    :min-word-length 3                          ;; Minimum length for a word to be considered
-   :processing-delay-ms 10                     ;; Delay between processing chunks for UI responsiveness
-   :symmetry-calculation-delay-ms 30           ;; Delay before starting symmetry calculations
+   :processing-delay-ms 30                     ;; Delay between processing chunks for UI responsiveness
+   :symmetry-calculation-delay-ms 50           ;; Delay before starting symmetry calculations
    :default-word "WIZARD"})                    ;; Default word to analyze on startup
 
 ;; UI configuration

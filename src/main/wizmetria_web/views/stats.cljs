@@ -61,4 +61,4 @@
          (for [[axis-id words] (get-in stats [:mirror :by-axis])
                :when (seq words)]
            ^{:key axis-id}
-           [symmetry-axis-section axis-id words])]]])) 
+           [symmetry-axis-section axis-id words])]]]))) 

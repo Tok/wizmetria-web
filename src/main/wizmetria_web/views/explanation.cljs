@@ -46,4 +46,4 @@
       [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
        {:on-click #(rf/dispatch [:update-word "NEARLY"])} "NEARLY"] ", "
       [:span.text-indigo-300.font-medium.cursor-pointer.hover:text-indigo-200.transition-colors.underline
-       {:on-click #(rf/dispatch [:update-word "REFERS"])} "REFERS"]]]]) 
+       {:on-click #(rf/dispatch [:update-word "REFERS"])} "REFERS"]]]]])
