@@ -547,14 +547,23 @@
         }
         
         /* Language dropdown glow */
-        .shiny-enabled .language-dropdown {
+        .shiny-enabled #language-dropdown {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(139, 92, 246, 0.3);
             border: 1px solid rgba(139, 92, 246, 0.3);
             overflow: hidden;
-            position: relative;
+            position: absolute;
+            z-index: 1000; /* Ensure it's above other elements */
         }
         
-        .shiny-enabled .language-dropdown::before {
+        /* Fix for dropdown positioning */
+        #language-dropdown {
+            position: absolute !important;
+            top: 100% !important;
+            transform: translateY(2px);
+            z-index: 100;
+        }
+        
+        .shiny-enabled #language-dropdown::before {
             content: '';
             position: absolute;
             top: 0;
