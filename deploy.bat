@@ -25,6 +25,11 @@ REM Switch to gh-pages branch
 echo Switching to gh-pages branch...
 git checkout gh-pages || git checkout -b gh-pages origin/gh-pages
 
+REM Remove source files from deployment branch
+echo Removing source files from deployment branch...
+git rm -rf src/
+git commit -m "Remove source files from deployment branch" --allow-empty
+
 REM Create .gitignore to ignore node_modules
 echo Setting up .gitignore for gh-pages...
 (

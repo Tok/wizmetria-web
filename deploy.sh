@@ -25,6 +25,11 @@ git fetch origin
 echo "Switching to gh-pages branch..."
 git checkout gh-pages || git checkout -b gh-pages origin/gh-pages
 
+# Remove source files from deployment branch
+echo "Removing source files from deployment branch..."
+git rm -rf src/ 2>/dev/null || true
+git commit -m "Remove source files from deployment branch" --allow-empty
+
 # Create .gitignore to ignore node_modules
 echo "Setting up .gitignore for gh-pages..."
 cat > .gitignore << EOF
